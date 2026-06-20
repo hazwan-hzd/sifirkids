@@ -92,7 +92,7 @@ export default function ChildHubPage({
           <Link
             href={`/play/${id}/sejarah`}
             role="button"
-            className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-teal-100 p-6 sm:col-span-2"
+            className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-teal-100 p-6"
             style={{ animationDelay: "160ms" }}
           >
             <span className="text-6xl">📜</span>
@@ -104,6 +104,22 @@ export default function ChildHubPage({
             </span>
           </Link>
         )}
+
+        {/* Peribahasa module — all children */}
+        <Link
+          href={`/play/${id}/peribahasa`}
+          role="button"
+          className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-grape-100 p-6"
+          style={{ animationDelay: "240ms" }}
+        >
+          <span className="text-6xl">📖</span>
+          <span className="font-display text-2xl font-bold text-grape-600">
+            Peribahasa
+          </span>
+          <span className="text-sm text-ink/70">
+            Tingkatan 1, 2 & 3 — Simpulan Bahasa & Peribahasa
+          </span>
+        </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-3">
