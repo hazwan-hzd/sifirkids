@@ -1,65 +1,78 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { PROFILES, COLOR_CLASSES } from "@/lib/data";
+import { useApp } from "@/lib/store";
+import { PageShell, Loading, PointsBadge } from "@/components/ui";
+import { cn } from "@/lib/utils";
+
+export default function HomePage() {
+  const { state, hydrated } = useApp();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <PageShell>
+      <header className="mb-8 text-center animate-rise">
+        <h1 className="font-display text-5xl font-bold text-grape-600 sm:text-6xl">
+          Sifir<span className="text-coral-500">Kids</span>
+        </h1>
+        <p className="mt-2 font-display text-lg text-ink/70">Who is learning today?</p>
+      </header>
+
+      {!hydrated ? (
+        <Loading />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PROFILES.map((p, i) => {
+            const c = COLOR_CLASSES[p.color];
+            const child = state.children[p.id];
+            return (
+              <Link
+                key={p.id}
+                href={`/play/${p.id}`}
+                role="button"
+                className={cn(
+                  "btn-pop tap animate-rise flex flex-col items-center gap-3 rounded-[var(--radius-blob)] p-6 text-center",
+                  c.bgSoft,
+                )}
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <span
+                  className={cn(
+                    "flex h-24 w-24 items-center justify-center rounded-full text-5xl shadow-[var(--shadow-pop)]",
+                    c.bg,
+                  )}
+                >
+                  {p.avatar}
+                </span>
+                <span className={cn("font-display text-2xl font-bold", c.text)}>{p.name}</span>
+                <PointsBadge points={child.rewards.points} />
+                {child.daily.currentStreak > 0 && (
+                  <span className="font-display text-sm text-ink/70">
+                    🔥 {child.daily.currentStreak} day streak
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+
+      <div className="mt-10 flex items-center justify-center gap-3">
+        <Link
+          href="/scoreboard"
+          role="button"
+          className="tap btn-pop rounded-full bg-sunny-400 px-5 py-3 font-display font-semibold text-ink"
+        >
+          🏆 Scoreboard
+        </Link>
+        <Link
+          href="/parent"
+          role="button"
+          className="tap btn-pop rounded-full bg-white/80 px-5 py-3 font-display font-semibold text-ink/70"
+        >
+          👪 Parents
+        </Link>
+      </div>
+    </PageShell>
   );
 }

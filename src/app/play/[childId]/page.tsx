@@ -1,0 +1,117 @@
+"use client";
+
+import { use, useEffect, useRef } from "react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { CHILD_IDS, COLOR_CLASSES, TABLES, ARABIC_LETTERS } from "@/lib/data";
+import type { ChildId } from "@/lib/types";
+import { useApp } from "@/lib/store";
+import { PageShell, Loading, PointsBadge, BackButton, ProgressBar } from "@/components/ui";
+import { cn } from "@/lib/utils";
+
+export default function ChildHubPage({
+  params,
+}: {
+  params: Promise<{ childId: string }>;
+}) {
+  const { childId } = use(params);
+  if (!CHILD_IDS.includes(childId as ChildId)) notFound();
+  const id = childId as ChildId;
+
+  const { state, hydrated, recordOpen } = useApp();
+  const opened = useRef(false);
+
+  useEffect(() => {
+    if (hydrated && !opened.current) {
+      opened.current = true;
+      recordOpen(id);
+    }
+  }, [hydrated, id, recordOpen]);
+
+  if (!hydrated) {
+    return (
+      <PageShell>
+        <Loading />
+      </PageShell>
+    );
+  }
+
+  const child = state.children[id];
+  const c = COLOR_CLASSES[child.profile.color];
+
+  const mathMastered = TABLES.filter((t) => child.multiplication[String(t)]?.mastered).length;
+  const mathPct = Math.round((mathMastered / TABLES.length) * 100);
+  const arabicMastered = ARABIC_LETTERS.filter((l) => child.arabic[l.id]?.mastered).length;
+  const arabicPct = Math.round((arabicMastered / ARABIC_LETTERS.length) * 100);
+
+  return (
+    <PageShell>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <BackButton href="/" />
+        <div className="flex items-center gap-2 font-display text-xl font-bold">
+          <span className="text-3xl">{child.profile.avatar}</span>
+          <span className={c.text}>{child.profile.name}</span>
+        </div>
+        <PointsBadge points={child.rewards.points} />
+      </div>
+
+      <p className="mb-6 text-center font-display text-2xl text-ink/80">What shall we play?</p>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Link
+          href={`/play/${id}/multiplication`}
+          role="button"
+          className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-coral-100 p-6"
+        >
+          <span className="text-6xl">✖️</span>
+          <span className="font-display text-2xl font-bold text-coral-600">Times Tables</span>
+          <span className="text-sm text-ink/70">Multiply 2 to 12</span>
+          <ProgressBar value={mathPct} color="coral" />
+          <span className="font-display text-sm text-ink/70">
+            {mathMastered}/{TABLES.length} tables mastered
+          </span>
+        </Link>
+
+        <Link
+          href={`/play/${id}/arabic`}
+          role="button"
+          className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-teal-100 p-6"
+          style={{ animationDelay: "80ms" }}
+        >
+          <span className="font-arabic text-6xl leading-none">ا ب ت</span>
+          <span className="font-display text-2xl font-bold text-teal-600">Alif Ba Ta</span>
+          <span className="text-sm text-ink/70">Learn Arabic letters</span>
+          <ProgressBar value={arabicPct} color="teal" />
+          <span className="font-display text-sm text-ink/70">
+            {arabicMastered}/{ARABIC_LETTERS.length} letters learned
+          </span>
+        </Link>
+      </div>
+
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        <Link
+          href={`/play/${id}/rewards`}
+          role="button"
+          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-sunny-100 p-4 text-center"
+        >
+          <span className="text-3xl">🎁</span>
+          <span className="font-display font-semibold text-sunny-600">Rewards</span>
+        </Link>
+        <Link
+          href="/scoreboard"
+          role="button"
+          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-grape-100 p-4 text-center"
+        >
+          <span className="text-3xl">🏆</span>
+          <span className="font-display font-semibold text-grape-600">Scores</span>
+        </Link>
+        <div className="flex flex-col items-center gap-1 rounded-3xl bg-white/70 p-4 text-center">
+          <span className="text-3xl">🔥</span>
+          <span className="font-display font-semibold text-ink/80">
+            {child.daily.currentStreak} day{child.daily.currentStreak === 1 ? "" : "s"}
+          </span>
+        </div>
+      </div>
+    </PageShell>
+  );
+}

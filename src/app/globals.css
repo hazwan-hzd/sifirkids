@@ -1,26 +1,107 @@
 @import "tailwindcss";
 
+/*
+  SifirKids design system — kid-friendly, colorful, high-contrast.
+  No purple->blue gradients. Rounded, playful, generous touch targets.
+*/
+
+@theme {
+  /* Display + body fonts (wired in layout.tsx via next/font) */
+  --font-display: var(--font-fredoka), "Comic Sans MS", system-ui, sans-serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
+  --font-arabic: var(--font-arabic), "Noto Naskh Arabic", serif;
+
+  /* Brand + playful palette */
+  --color-cream: #fff9f0;
+  --color-ink: #2c2140;
+
+  --color-grape-50: #f6f0ff;
+  --color-grape-100: #ece0ff;
+  --color-grape-400: #a06bff;
+  --color-grape-500: #8b4dff;
+  --color-grape-600: #7438e8;
+
+  --color-coral-100: #ffe3e0;
+  --color-coral-400: #ff7a6b;
+  --color-coral-500: #ff5a47;
+  --color-coral-600: #e8412f;
+
+  --color-teal-100: #d4f5ef;
+  --color-teal-400: #2fd6b6;
+  --color-teal-500: #14c2a0;
+  --color-teal-600: #0aa185;
+
+  --color-sky-100: #d9eeff;
+  --color-sky-400: #4db5ff;
+  --color-sky-500: #1f9bff;
+  --color-sky-600: #0a7fe0;
+
+  --color-sunny-100: #fff2cc;
+  --color-sunny-400: #ffce3a;
+  --color-sunny-500: #ffba00;
+  --color-sunny-600: #e8a400;
+
+  --color-leaf-400: #7ed957;
+  --color-leaf-500: #5cc234;
+
+  /* Rounded scale */
+  --radius-blob: 2rem;
+
+  /* Playful shadows tinted with ink hue */
+  --shadow-pop: 0 6px 0 0 rgba(44, 33, 64, 0.18);
+  --shadow-soft: 0 10px 30px -10px rgba(44, 33, 64, 0.25);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--color-cream);
+  --foreground: var(--color-ink);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 186, 0, 0.10), transparent 30%),
+    radial-gradient(circle at 88% 12%, rgba(20, 194, 160, 0.10), transparent 28%),
+    radial-gradient(circle at 50% 95%, rgba(139, 77, 255, 0.08), transparent 35%),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bouncy press feedback used across kid buttons (press only, no elastic easing) */
+.btn-pop {
+  box-shadow: var(--shadow-pop);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.btn-pop:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 0 rgba(44, 33, 64, 0.18);
+}
+
+/* Gentle entrance, no bounce/elastic */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise { animation: rise 0.35s ease both; }
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-pop { animation: pop-in 0.25s ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise, .animate-pop { animation: none; }
+  .btn-pop { transition: none; }
+}
+
+/* All interactive targets meet 44px min */
+button, a[role="button"], .tap {
+  min-height: 44px;
 }
