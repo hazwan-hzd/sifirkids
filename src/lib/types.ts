@@ -3,7 +3,7 @@
 
 export type ChildId = "hafeeza" | "dhiya" | "ilyas";
 
-export type ModuleId = "multiplication" | "arabic";
+export type ModuleId = "multiplication" | "arabic" | "sejarah";
 
 export type QuizMode = "random" | "standard";
 

@@ -211,12 +211,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           : local.sessions;
 
         // Merge topic stats (take higher attempts)
+        // For Arabic: remote keys are aggregate topics ("set-1", "all") but local keys
+        // are per-letter IDs ("alif", "ba", etc.). We must not let remote aggregate keys
+        // overwrite local per-letter keys, so skip remote Arabic aggregate keys.
+        const isArabicAggregateKey = (k: string) =>
+          k === "all" || k.startsWith("set-");
+
         const mergeBucket = (
           lb: Record<string, TopicStat>,
           rb: Record<string, TopicStat>,
+          isArabic: boolean,
         ) => {
           const m = { ...lb };
           for (const [k, rs] of Object.entries(rb)) {
+            // Skip aggregate keys for Arabic — they'd clobber per-letter progress
+            if (isArabic && isArabicAggregateKey(k)) continue;
             if (!m[k] || rs.attempts > m[k].attempts) m[k] = rs;
           }
           return m;
@@ -233,8 +242,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         next.children[p.id] = {
           ...local,
           sessions,
-          multiplication: mergeBucket(local.multiplication, remote.multiplication),
-          arabic: mergeBucket(local.arabic, remote.arabic),
+          multiplication: mergeBucket(local.multiplication, remote.multiplication, false),
+          arabic: mergeBucket(local.arabic, remote.arabic, true),
           daily: {
             ...local.daily,
             history: mergedHistory,

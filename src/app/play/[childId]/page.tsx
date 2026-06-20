@@ -86,6 +86,24 @@ export default function ChildHubPage({
             {arabicMastered}/{ARABIC_LETTERS.length} letters learned
           </span>
         </Link>
+
+        {/* Sejarah module — Dhiya only */}
+        {id === "dhiya" && (
+          <Link
+            href={`/play/${id}/sejarah`}
+            role="button"
+            className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-teal-100 p-6 sm:col-span-2"
+            style={{ animationDelay: "160ms" }}
+          >
+            <span className="text-6xl">📜</span>
+            <span className="font-display text-2xl font-bold text-teal-600">
+              Sejarah Tingkatan 3
+            </span>
+            <span className="text-sm text-ink/70">
+              Kuiz KSSM — 8 Bab Kedatangan Kuasa Asing
+            </span>
+          </Link>
+        )}
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-3">
