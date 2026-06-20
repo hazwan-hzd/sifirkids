@@ -366,18 +366,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateChild(childId, (c) => {
         let next = touchDay(c, true);
 
-        // per-item progress
-        const bucketKey = input.module === "multiplication" ? "multiplication" : "arabic";
-        const bucket = { ...next[bucketKey] };
-        const updates =
-          input.perKey ??
-          ({ [input.topic]: { attempts: input.total, correct: input.correct, bestStreak: input.bestStreak } } as NonNullable<
-            QuizResultInput["perKey"]
-          >);
-        for (const [key, add] of Object.entries(updates)) {
-          const { stat, masteredNow: m } = applyTopicResult(bucket[key], add, nowIso);
-          bucket[key] = stat;
-          if (m) masteredNow.push(key);
+        // per-item progress (only for multiplication and arabic - sejarah has its own tables)
+        if (input.module === "multiplication" || input.module === "arabic") {
+          const bucketKey = input.module;
+          const bucket = { ...next[bucketKey] };
+          const updates =
+            input.perKey ??
+            ({ [input.topic]: { attempts: input.total, correct: input.correct, bestStreak: input.bestStreak } } as NonNullable<
+              QuizResultInput["perKey"]
+            >);
+          for (const [key, add] of Object.entries(updates)) {
+            const { stat, masteredNow: m } = applyTopicResult(bucket[key], add, nowIso);
+            bucket[key] = stat;
+            if (m) masteredNow.push(key);
+          }
+          next = { ...next, [bucketKey]: bucket };
         }
 
         // daily streak bonus once per day
@@ -410,7 +413,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         next = {
           ...next,
-          [bucketKey]: bucket,
           daily,
           sessions,
           rewards: {
