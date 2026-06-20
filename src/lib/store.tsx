@@ -36,6 +36,7 @@ import {
 } from "./data";
 import { dayKey, daysBetween, uid } from "./utils";
 import { logQuizToSupabase } from "./supabase";
+import { useSupabaseData, type SupabaseChildData } from "./supabase-read";
 
 const STORAGE_KEY = "sifirkids:v1";
 const MAX_SESSIONS = 200; // cap per child to keep storage small
@@ -188,6 +189,72 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     setHydrated(true);
   }, []);
+
+  // Supabase cloud sync: merge remote data into state after hydration
+  const sbSyncDone = useRef(false);
+  const { data: sbData } = useSupabaseData();
+
+  useEffect(() => {
+    if (!hydrated || !sbData || sbSyncDone.current) return;
+    sbSyncDone.current = true;
+
+    setState((prev) => {
+      const next = { ...prev, children: { ...prev.children } };
+      for (const p of PROFILES) {
+        const remote = sbData[p.id];
+        if (!remote || remote.sessions.length === 0) continue;
+        const local = next.children[p.id];
+
+        // Use whichever has more sessions
+        const sessions = remote.sessions.length > local.sessions.length
+          ? remote.sessions
+          : local.sessions;
+
+        // Merge topic stats (take higher attempts)
+        const mergeBucket = (
+          lb: Record<string, TopicStat>,
+          rb: Record<string, TopicStat>,
+        ) => {
+          const m = { ...lb };
+          for (const [k, rs] of Object.entries(rb)) {
+            if (!m[k] || rs.attempts > m[k].attempts) m[k] = rs;
+          }
+          return m;
+        };
+
+        // Merge daily history
+        const mergedHistory = { ...local.daily.history };
+        for (const [day, rec] of Object.entries(remote.daily.history)) {
+          if (!mergedHistory[day] || rec.sessions > mergedHistory[day].sessions) {
+            mergedHistory[day] = rec;
+          }
+        }
+
+        next.children[p.id] = {
+          ...local,
+          sessions,
+          multiplication: mergeBucket(local.multiplication, remote.multiplication),
+          arabic: mergeBucket(local.arabic, remote.arabic),
+          daily: {
+            ...local.daily,
+            history: mergedHistory,
+            currentStreak: Math.max(local.daily.currentStreak, remote.daily.currentStreak),
+            longestStreak: Math.max(local.daily.longestStreak, remote.daily.longestStreak),
+            lastActiveDate: remote.daily.lastActiveDate ?? local.daily.lastActiveDate,
+          },
+          metrics: {
+            ...local.metrics,
+            totalTimeSec: Math.max(local.metrics.totalTimeSec, remote.metrics.totalTimeSec),
+          },
+          rewards: {
+            ...local.rewards,
+            totalEarned: Math.max(local.rewards.totalEarned, remote.rewards.totalEarned),
+          },
+        };
+      }
+      return next;
+    });
+  }, [hydrated, sbData]);
 
   // persist on change (after hydration)
   useEffect(() => {
