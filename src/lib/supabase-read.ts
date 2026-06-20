@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import type { ChildId, QuizSession, TopicStat, DayRecord, QuizMode } from "./types";
 import { emptyTopicStat } from "./types";
-import { MASTERY, POINTS, TABLES } from "./data";
+import { MASTERY, POINTS, TABLES, ARABIC_LETTERS } from "./data";
 import { computePoints } from "./store";
 
 export interface SupabaseChildData {
@@ -41,6 +41,12 @@ function daysBetweenKeys(a: string, b: string): number {
   return Math.round((db.getTime() - da.getTime()) / 86400000);
 }
 
+/** Build a name→id lookup for Arabic letters (case-insensitive) */
+const ARABIC_NAME_TO_ID: Record<string, string> = {};
+for (const l of ARABIC_LETTERS) {
+  ARABIC_NAME_TO_ID[l.name.toLowerCase()] = l.id;
+}
+
 function buildChildData(
   rows: Array<{
     id: string;
@@ -53,6 +59,11 @@ function buildChildData(
     duration_sec: number;
     best_streak: number;
     points_earned: number;
+    created_at: string;
+  }>,
+  arabicAnswers: Array<{
+    correct_answer: string;
+    is_correct: boolean;
     created_at: string;
   }>,
 ): SupabaseChildData {
@@ -84,16 +95,17 @@ function buildChildData(
       date: row.created_at,
     });
 
-    // Accumulate topic stats
-    const bucket = row.module === "multiplication" ? multiplication : arabic;
-    const stat = bucket[row.topic] ?? emptyTopicStat();
-    stat.attempts += row.total_questions;
-    stat.correct += row.correct_answers;
-    stat.bestStreak = Math.max(stat.bestStreak, row.best_streak);
-    stat.lastPracticed = row.created_at;
-    stat.mastered =
-      stat.attempts >= MASTERY.minAttempts && stat.correct / stat.attempts >= MASTERY.accuracy;
-    bucket[row.topic] = stat;
+    // Accumulate topic stats (for multiplication only - Arabic uses per-letter from answers)
+    if (row.module === "multiplication") {
+      const stat = multiplication[row.topic] ?? emptyTopicStat();
+      stat.attempts += row.total_questions;
+      stat.correct += row.correct_answers;
+      stat.bestStreak = Math.max(stat.bestStreak, row.best_streak);
+      stat.lastPracticed = row.created_at;
+      stat.mastered =
+        stat.attempts >= MASTERY.minAttempts && stat.correct / stat.attempts >= MASTERY.accuracy;
+      multiplication[row.topic] = stat;
+    }
 
     // Daily history
     const day = dayKeyFromIso(row.created_at);
@@ -114,6 +126,19 @@ function buildChildData(
     totalQuestions += row.total_questions;
     totalCorrect += row.correct_answers;
     totalEarned += row.points_earned;
+  }
+
+  // Build per-letter Arabic stats from individual answer records
+  for (const ans of arabicAnswers) {
+    const letterId = ARABIC_NAME_TO_ID[ans.correct_answer.toLowerCase()];
+    if (!letterId) continue;
+    const stat = arabic[letterId] ?? emptyTopicStat();
+    stat.attempts += 1;
+    if (ans.is_correct) stat.correct += 1;
+    stat.lastPracticed = ans.created_at;
+    stat.mastered =
+      stat.attempts >= MASTERY.minAttempts && stat.correct / stat.attempts >= MASTERY.accuracy;
+    arabic[letterId] = stat;
   }
 
   // Compute streaks from daily history
@@ -174,28 +199,55 @@ export function useSupabaseData() {
     }
 
     try {
-      const { data: rows, error: err } = await supabase
-        .from("quiz_sessions")
-        .select("*")
-        .order("created_at", { ascending: true });
+      // Fetch sessions and Arabic answers in parallel
+      const [sessionsRes, arabicAnswersRes] = await Promise.all([
+        supabase
+          .from("quiz_sessions")
+          .select("*")
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("quiz_answers")
+          .select("child_id, correct_answer, is_correct, created_at")
+          .eq("module", "arabic")
+          .order("created_at", { ascending: true }),
+      ]);
 
-      if (err) {
-        setError(err.message);
+      if (sessionsRes.error) {
+        setError(sessionsRes.error.message);
         setLoading(false);
         return;
       }
 
-      // Group by child_id
+      const rows = sessionsRes.data ?? [];
+      const arabicAnswerRows = arabicAnswersRes.data ?? [];
+
+      // Group sessions by child_id
       const grouped: Record<string, typeof rows> = {};
-      for (const row of rows ?? []) {
+      for (const row of rows) {
         const cid = row.child_id;
         if (!grouped[cid]) grouped[cid] = [];
         grouped[cid].push(row);
       }
 
+      // Group Arabic answers by child_id
+      const arabicGrouped: Record<string, typeof arabicAnswerRows> = {};
+      for (const row of arabicAnswerRows) {
+        const cid = row.child_id;
+        if (!arabicGrouped[cid]) arabicGrouped[cid] = [];
+        arabicGrouped[cid].push(row);
+      }
+
       const result: Record<string, SupabaseChildData> = {};
-      for (const [cid, childRows] of Object.entries(grouped)) {
-        result[cid] = buildChildData(childRows);
+      // Process all children that appear in either dataset
+      const allChildIds = new Set([
+        ...Object.keys(grouped),
+        ...Object.keys(arabicGrouped),
+      ]);
+      for (const cid of allChildIds) {
+        result[cid] = buildChildData(
+          grouped[cid] ?? [],
+          arabicGrouped[cid] ?? [],
+        );
       }
 
       setData(result);
@@ -212,3 +264,4 @@ export function useSupabaseData() {
 
   return { data, loading, error, refresh };
 }
+
