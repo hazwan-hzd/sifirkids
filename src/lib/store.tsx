@@ -35,7 +35,7 @@ import {
   getReward,
 } from "./data";
 import { dayKey, daysBetween, uid } from "./utils";
-import { logQuizToSupabase } from "./supabase";
+import { supabase, logQuizToSupabase } from "./supabase";
 import { useSupabaseData, type SupabaseChildData } from "./supabase-read";
 
 const STORAGE_KEY = "sifirkids:v1";
@@ -64,7 +64,7 @@ function defaultChild(profile: Profile): ChildData {
 function defaultState(): AppState {
   const children = {} as Record<ChildId, ChildData>;
   for (const p of PROFILES) children[p.id] = defaultChild(p);
-  return { version: 1, children, parentPin: "1234", reminderTime: "18:00" };
+  return { version: 1, children, parentPin: "3675", reminderTime: "18:00" };
 }
 
 /** Merge persisted state onto defaults so new fields never crash old saves. */
@@ -264,6 +264,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
   }, [hydrated, sbData]);
+
+  // Supabase settings sync: fetch PIN + reminder time from cloud
+  const settingsSyncDone = useRef(false);
+  useEffect(() => {
+    if (!hydrated || settingsSyncDone.current) return;
+    settingsSyncDone.current = true;
+    if (!supabase) return;
+    supabase
+      .from("app_settings")
+      .select("parent_pin, reminder_time")
+      .eq("id", "default")
+      .single()
+      .then(({ data: row }) => {
+        if (row) {
+          setState((s) => ({
+            ...s,
+            parentPin: row.parent_pin ?? s.parentPin,
+            reminderTime: row.reminder_time ?? s.reminderTime,
+          }));
+        }
+      });
+  }, [hydrated]);
 
   // persist on change (after hydration)
   useEffect(() => {
@@ -500,10 +522,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const setParentPin = useCallback((pin: string) => {
     setState((s) => ({ ...s, parentPin: pin }));
+    // Sync to Supabase
+    if (supabase) {
+      supabase
+        .from("app_settings")
+        .update({ parent_pin: pin, updated_at: new Date().toISOString() })
+        .eq("id", "default")
+        .then();
+    }
   }, []);
 
   const setReminderTime = useCallback((time: string) => {
     setState((s) => ({ ...s, reminderTime: time }));
+    // Sync to Supabase
+    if (supabase) {
+      supabase
+        .from("app_settings")
+        .update({ reminder_time: time, updated_at: new Date().toISOString() })
+        .eq("id", "default")
+        .then();
+    }
   }, []);
 
   const setDailyGoal = useCallback(
