@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useApp } from "@/lib/store";
+import { useSupabaseData, type SupabaseChildData } from "@/lib/supabase-read";
 import { PROFILES, COLOR_CLASSES, TABLES, ARABIC_LETTERS } from "@/lib/data";
-import type { ChildId } from "@/lib/types";
+import type { ChildData, ChildId, QuizSession, TopicStat } from "@/lib/types";
 import { PageShell, Loading, BackButton, PointsBadge } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { PinGate } from "./PinGate";
@@ -15,12 +16,77 @@ import { RewardApprovals } from "./RewardApprovals";
 import { Settings } from "./Settings";
 import { formatDuration, formatLastOpen, lastNDays, dayLabel } from "./format";
 
+/**
+ * Merge localStorage child data with Supabase data.
+ * Supabase is authoritative for sessions/stats; localStorage provides
+ * rewards, opens, and other client-only data.
+ */
+function mergeChildData(local: ChildData, remote: SupabaseChildData | undefined): ChildData {
+  if (!remote || remote.sessions.length === 0) return local;
+
+  // Use whichever source has more sessions (Supabase is cross-device)
+  const useRemoteSessions = remote.sessions.length > local.sessions.length;
+  const sessions = useRemoteSessions ? remote.sessions : local.sessions;
+
+  // Merge topic stats: take the one with more attempts
+  const mergeTopicBucket = (
+    localBucket: Record<string, TopicStat>,
+    remoteBucket: Record<string, TopicStat>,
+  ): Record<string, TopicStat> => {
+    const merged = { ...localBucket };
+    for (const [key, remoteStat] of Object.entries(remoteBucket)) {
+      const localStat = merged[key];
+      if (!localStat || remoteStat.attempts > localStat.attempts) {
+        merged[key] = remoteStat;
+      }
+    }
+    return merged;
+  };
+
+  // Merge daily history: take the higher value per day
+  const mergedDailyHistory = { ...local.daily.history };
+  for (const [day, remoteRec] of Object.entries(remote.daily.history)) {
+    const localRec = mergedDailyHistory[day];
+    if (!localRec || remoteRec.sessions > localRec.sessions) {
+      mergedDailyHistory[day] = remoteRec;
+    }
+  }
+
+  return {
+    ...local,
+    sessions,
+    multiplication: mergeTopicBucket(local.multiplication, remote.multiplication),
+    arabic: mergeTopicBucket(local.arabic, remote.arabic),
+    daily: {
+      ...local.daily,
+      history: mergedDailyHistory,
+      currentStreak: Math.max(local.daily.currentStreak, remote.daily.currentStreak),
+      longestStreak: Math.max(local.daily.longestStreak, remote.daily.longestStreak),
+      lastActiveDate: remote.daily.lastActiveDate ?? local.daily.lastActiveDate,
+    },
+    metrics: {
+      ...local.metrics,
+      totalTimeSec: Math.max(local.metrics.totalTimeSec, remote.metrics.totalTimeSec),
+    },
+    rewards: {
+      ...local.rewards,
+      totalEarned: Math.max(local.rewards.totalEarned, remote.rewards.totalEarned),
+    },
+  };
+}
+
 export default function ParentPage() {
   const { state, hydrated } = useApp();
+  const { data: sbData, loading: sbLoading } = useSupabaseData();
   const [unlocked, setUnlocked] = useState(false);
   const [active, setActive] = useState<ChildId>(PROFILES[0].id);
 
-  const child = state.children[active];
+  const child = useMemo(() => {
+    const local = state.children[active];
+    const remote = sbData?.[active];
+    return mergeChildData(local, remote);
+  }, [state, active, sbData]);
+
   const c = COLOR_CLASSES[child.profile.color];
 
   const stats = useMemo(() => {
@@ -67,11 +133,25 @@ export default function ParentPage() {
         <PinGate onUnlock={() => setUnlocked(true)} />
       ) : (
         <div className="space-y-6">
+          {/* Data source indicator */}
+          {sbData && (
+            <div className="flex items-center justify-center gap-2 rounded-xl bg-leaf-100 px-3 py-2 text-sm font-semibold text-leaf-600">
+              ☁️ Synced from cloud
+              {sbLoading && " (loading...)"}
+            </div>
+          )}
+          {!sbData && !sbLoading && (
+            <div className="flex items-center justify-center gap-2 rounded-xl bg-sunny-100 px-3 py-2 text-sm font-semibold text-sunny-600">
+              📱 Local data only (this device)
+            </div>
+          )}
+
           {/* Child tabs */}
           <div className="flex gap-2">
             {PROFILES.map((p) => {
               const pc = COLOR_CLASSES[p.color];
               const on = p.id === active;
+              const hasRemoteData = sbData?.[p.id] && sbData[p.id].sessions.length > 0;
               return (
                 <button
                   key={p.id}
@@ -83,6 +163,7 @@ export default function ParentPage() {
                 >
                   <span className="mr-1">{p.avatar}</span>
                   {p.name}
+                  {hasRemoteData && <span className="ml-1 text-xs">☁️</span>}
                 </button>
               );
             })}
