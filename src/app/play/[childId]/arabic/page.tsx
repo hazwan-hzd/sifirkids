@@ -12,7 +12,7 @@ import {
   type ArabicLetter,
 } from "@/lib/data";
 import type { ChildId } from "@/lib/types";
-import { useChild, useSessionTimer, type QuizOutcome } from "@/lib/store";
+import { useChild, useSessionTimer, type QuizOutcome, type QuizResultInput } from "@/lib/store";
 import {
   PageShell,
   Loading,
@@ -99,6 +99,8 @@ export default function ArabicPage({
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const tallies = useRef<Record<string, LetterTally>>({});
+  const questionStartRef = useRef<number>(Date.now());
+  const answersRef = useRef<NonNullable<QuizResultInput["answers"]>>([]);
 
   // results state
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null);
@@ -133,6 +135,8 @@ export default function ArabicPage({
     setStreak(0);
     setBestStreak(0);
     tallies.current = {};
+    answersRef.current = [];
+    questionStartRef.current = Date.now();
     timer.reset();
     setScreen("test");
   }
@@ -142,6 +146,17 @@ export default function ArabicPage({
     const q = questions[qIndex];
     const isCorrect = optionId === q.letter.id;
     setPicked(optionId);
+
+    // Record answer for Supabase logging
+    const responseTimeMs = Date.now() - questionStartRef.current;
+    const pickedLetter = ARABIC_LETTERS.find((l) => l.id === optionId);
+    answersRef.current.push({
+      question: q.style === "glyphToName" ? q.letter.glyph : q.letter.name,
+      correctAnswer: q.letter.name,
+      givenAnswer: pickedLetter?.name ?? optionId,
+      isCorrect,
+      responseTimeMs,
+    });
 
     // per-letter tally
     const t = tallies.current[q.letter.id] ?? {
@@ -182,6 +197,7 @@ export default function ArabicPage({
         } else {
           setQIndex((i) => i + 1);
           setPicked(null);
+          questionStartRef.current = Date.now();
         }
       },
       isCorrect ? 650 : 1100,
@@ -209,6 +225,7 @@ export default function ArabicPage({
       durationSec,
       bestStreak: finalBestStreak,
       perKey,
+      answers: answersRef.current,
     });
     setOutcome(out);
     setResultCorrect(finalCorrect);
