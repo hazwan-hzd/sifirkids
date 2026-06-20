@@ -145,6 +145,7 @@ function applyTopicResult(
   prev: TopicStat | undefined,
   add: { attempts: number; correct: number; bestStreak?: number },
   todayIso: string,
+  minAttempts: number = MASTERY.minAttempts,
 ): { stat: TopicStat; masteredNow: boolean } {
   const s = prev ? { ...prev } : emptyTopicStat();
   const wasMastered = s.mastered;
@@ -153,7 +154,7 @@ function applyTopicResult(
   s.bestStreak = Math.max(s.bestStreak, add.bestStreak ?? 0);
   s.lastPracticed = todayIso;
   s.mastered =
-    s.attempts >= MASTERY.minAttempts && s.correct / s.attempts >= MASTERY.accuracy;
+    s.attempts >= minAttempts && s.correct / s.attempts >= MASTERY.accuracy;
   return { stat: s, masteredNow: !wasMastered && s.mastered };
 }
 
@@ -375,8 +376,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ({ [input.topic]: { attempts: input.total, correct: input.correct, bestStreak: input.bestStreak } } as NonNullable<
               QuizResultInput["perKey"]
             >);
+          const isArabic = input.module === "arabic";
+          const minAttempts = isArabic ? 3 : MASTERY.minAttempts;
           for (const [key, add] of Object.entries(updates)) {
-            const { stat, masteredNow: m } = applyTopicResult(bucket[key], add, nowIso);
+            const { stat, masteredNow: m } = applyTopicResult(bucket[key], add, nowIso, minAttempts);
             bucket[key] = stat;
             if (m) masteredNow.push(key);
           }

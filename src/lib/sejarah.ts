@@ -48,10 +48,50 @@ export interface ChapterInfo {
   questionCount: number;
 }
 
+export type QuizMode = "quick" | "full";
+const QUICK_QUIZ_COUNT = 10;
+
 /* ----------------------------- Queries ----------------------------- */
 
-/** Fetch all questions for a specific chapter, shuffled. */
-export async function fetchQuestions(chapter: number): Promise<SejarahQuestion[]> {
+/** Fisher-Yates shuffle helper. Mutates in place & returns the array. */
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** Get IDs of questions already answered by this child for a chapter. */
+export async function fetchSeenQuestionIds(
+  childId: string,
+  chapter: number,
+): Promise<Set<string>> {
+  if (!supabase) return new Set();
+  // Join answer_log -> quiz_results to filter by child + chapter
+  const { data, error } = await supabase
+    .from("sejarah_answer_log")
+    .select("question_id, result_id!inner(child_id, chapter)")
+    .eq("result_id.child_id", childId)
+    .eq("result_id.chapter", chapter);
+  if (error) {
+    console.error("Error fetching seen questions:", error);
+    return new Set();
+  }
+  return new Set((data ?? []).map((r: { question_id: string }) => r.question_id));
+}
+
+/**
+ * Fetch questions for a chapter with smart randomization.
+ * - Prioritizes unseen questions (ones the child hasn't answered before)
+ * - In "quick" mode: returns QUICK_QUIZ_COUNT questions
+ * - In "full" mode: returns all questions
+ */
+export async function fetchQuestions(
+  chapter: number,
+  mode: QuizMode = "quick",
+  childId?: string,
+): Promise<SejarahQuestion[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("sejarah_questions")
@@ -62,13 +102,29 @@ export async function fetchQuestions(chapter: number): Promise<SejarahQuestion[]
     console.error("Error fetching sejarah questions:", error);
     return [];
   }
-  // Shuffle questions
-  const questions = (data ?? []) as SejarahQuestion[];
-  for (let i = questions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [questions[i], questions[j]] = [questions[j], questions[i]];
+  const allQuestions = (data ?? []) as SejarahQuestion[];
+
+  // Get previously seen IDs for smart prioritization
+  const seenIds = childId
+    ? await fetchSeenQuestionIds(childId, chapter)
+    : new Set<string>();
+
+  // Split into unseen and seen
+  const unseen = allQuestions.filter((q) => !seenIds.has(q.id));
+  const seen = allQuestions.filter((q) => seenIds.has(q.id));
+
+  // Shuffle both pools independently
+  shuffle(unseen);
+  shuffle(seen);
+
+  // Prioritize unseen, then fill with seen
+  const prioritized = [...unseen, ...seen];
+
+  if (mode === "full") {
+    return prioritized;
   }
-  return questions;
+  // Quick mode: take QUICK_QUIZ_COUNT
+  return prioritized.slice(0, QUICK_QUIZ_COUNT);
 }
 
 /** Fetch chapter list with question counts. */

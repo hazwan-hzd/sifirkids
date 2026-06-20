@@ -146,8 +146,11 @@ export default function PeribahasaPage({
   const submitAnswer = useCallback(() => {
     if (!selectedAnswer || showExplanation) return;
     const q = questions[currentIdx];
+    const opts = parseOptions(q.options);
+    const selectedIdx = selectedAnswer.charCodeAt(0) - 65;
+    const selectedOptText = opts[selectedIdx] || "";
     const isCorrect =
-      selectedAnswer.trim().toLowerCase() ===
+      selectedOptText.trim().toLowerCase() ===
       q.correct_answer.trim().toLowerCase();
     const responseTimeMs = Date.now() - questionStartRef.current;
 
@@ -374,8 +377,8 @@ export default function PeribahasaPage({
           <p className="font-display text-xl font-bold leading-snug text-ink">
             {q.question_text}
           </p>
-          {/* Show the peribahasa below the question for context */}
-          {q.peribahasa && q.question_type !== "fill_blank" && (
+          {/* Show the peribahasa below the question for context only after answering */}
+          {alreadyAnswered && q.peribahasa && q.question_type !== "fill_blank" && (
             <p className="mt-2 text-sm italic text-grape-600">
               &ldquo;{q.peribahasa}&rdquo;
             </p>

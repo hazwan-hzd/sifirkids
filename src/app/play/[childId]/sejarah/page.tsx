@@ -26,6 +26,7 @@ import {
   type SejarahQuestion,
   type ChapterInfo,
   type SejarahQuizResult,
+  type QuizMode,
 } from "@/lib/sejarah";
 
 const ACCENT = "teal" as const; // Dhiya's color
@@ -86,6 +87,7 @@ export default function SejarahPage({
 
   // Quiz state
   const [activeChapter, setActiveChapter] = useState<number>(1);
+  const [quizMode, setQuizMode] = useState<QuizMode>("quick");
   const [questions, setQuestions] = useState<SejarahQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<AnswerRecord[]>([]);
@@ -117,7 +119,7 @@ export default function SejarahPage({
 
   // Start quiz for a chapter
   const startQuiz = useCallback(async (chapter: number) => {
-    const qs = await fetchQuestions(chapter);
+    const qs = await fetchQuestions(chapter, quizMode, id);
     if (qs.length === 0) return;
     setActiveChapter(chapter);
     setQuestions(qs);
@@ -130,7 +132,7 @@ export default function SejarahPage({
     questionStartRef.current = Date.now();
     quizStartRef.current = Date.now();
     setScreen("quiz");
-  }, []);
+  }, [quizMode, id]);
 
   // Submit answer for current question
   const submitAnswer = useCallback(() => {
@@ -246,8 +248,41 @@ export default function SejarahPage({
         <h1 className="mb-2 text-center font-display text-3xl font-bold text-teal-600">
           Sejarah Tingkatan 3 📜
         </h1>
-        <p className="mb-6 text-center font-display text-lg text-ink/70">
+        <p className="mb-4 text-center font-display text-lg text-ink/70">
           Pilih bab untuk kuiz
+        </p>
+
+        {/* Quiz Mode Toggle */}
+        <div className="mb-5 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setQuizMode("quick")}
+            className={cn(
+              "tap rounded-full px-4 py-2 font-display text-sm font-bold transition-all",
+              quizMode === "quick"
+                ? "bg-teal-500 text-white shadow-lg scale-105"
+                : "bg-white/70 text-ink/60 hover:bg-teal-50",
+            )}
+          >
+            ⚡ Kuiz Pantas
+            <span className="ml-1 text-xs opacity-80">(10 soalan)</span>
+          </button>
+          <button
+            onClick={() => setQuizMode("full")}
+            className={cn(
+              "tap rounded-full px-4 py-2 font-display text-sm font-bold transition-all",
+              quizMode === "full"
+                ? "bg-teal-500 text-white shadow-lg scale-105"
+                : "bg-white/70 text-ink/60 hover:bg-teal-50",
+            )}
+          >
+            📝 Peperiksaan Penuh
+            <span className="ml-1 text-xs opacity-80">(semua)</span>
+          </button>
+        </div>
+
+        {/* Smart prioritization hint */}
+        <p className="mb-4 text-center text-xs text-ink/40">
+          ✨ Soalan yang belum pernah dijawab akan diutamakan
         </p>
 
         <div className="flex flex-col gap-3">
@@ -343,6 +378,9 @@ export default function SejarahPage({
           </button>
           <div className="font-display text-sm font-bold text-ink/60">
             Bab {activeChapter} • Soalan {currentIdx + 1}/{questions.length}
+            <span className="ml-1 text-xs opacity-60">
+              {quizMode === "quick" ? "⚡" : "📝"}
+            </span>
           </div>
           <div className="w-12" />
         </div>

@@ -137,7 +137,7 @@ function buildChildData(
     if (ans.is_correct) stat.correct += 1;
     stat.lastPracticed = ans.created_at;
     stat.mastered =
-      stat.attempts >= MASTERY.minAttempts && stat.correct / stat.attempts >= MASTERY.accuracy;
+      stat.attempts >= 3 && stat.correct / stat.attempts >= MASTERY.accuracy;
     arabic[letterId] = stat;
   }
 

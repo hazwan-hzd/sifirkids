@@ -299,7 +299,7 @@ function SetPicker({
   onLearn,
   onTest,
 }: {
-  arabic: Record<string, { mastered: boolean }>;
+  arabic: Record<string, { mastered: boolean; attempts?: number }>;
   onLearn: (set: number) => void;
   onTest: (c: SetChoice) => void;
 }) {
@@ -334,11 +334,29 @@ function SetPicker({
 
               <div
                 dir="rtl"
-                className="font-arabic flex flex-wrap justify-center gap-x-3 gap-y-1 text-4xl leading-tight text-ink"
+                className="flex flex-wrap justify-center gap-2 py-2"
               >
-                {letters.map((l) => (
-                  <span key={l.id}>{l.glyph}</span>
-                ))}
+                {letters.map((l) => {
+                  const stat = arabic[l.id];
+                  const isMastered = stat?.mastered;
+                  const hasAttempted = stat && stat.attempts && stat.attempts > 0;
+                  return (
+                    <span
+                      key={l.id}
+                      className={cn(
+                        "font-arabic flex h-11 w-11 items-center justify-center rounded-full text-2xl font-bold border-2 transition-all shadow-sm",
+                        isMastered
+                          ? "bg-leaf-100 text-leaf-700 border-leaf-400 font-bold"
+                          : hasAttempted
+                            ? "bg-teal-50 text-teal-700 border-teal-300"
+                            : "bg-white/50 text-ink/30 border-black/10 hover:border-black/20"
+                      )}
+                      title={`${l.name} (${isMastered ? "Mastered" : hasAttempted ? "Practicing" : "Unpracticed"})`}
+                    >
+                      {l.glyph}
+                    </span>
+                  );
+                })}
               </div>
 
               <ProgressBar value={value} color={ACCENT} />
