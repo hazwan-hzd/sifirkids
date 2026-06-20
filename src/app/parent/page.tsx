@@ -15,7 +15,15 @@ import { MultiplicationGrid, ArabicGrid } from "./MasteryGrid";
 import { RewardApprovals } from "./RewardApprovals";
 import { Settings } from "./Settings";
 import { formatDuration, formatLastOpen, lastNDays, dayLabel } from "./format";
-import { fetchVocabGaps, toggleVocabReviewed, type SejarahVocabGap } from "@/lib/sejarah";
+import {
+  fetchVocabGaps,
+  toggleVocabReviewed,
+  fetchQuizResults as fetchSejarahResults,
+  fetchChapters as fetchSejarahChapters,
+  type SejarahVocabGap,
+  type SejarahQuizResult,
+  type ChapterInfo,
+} from "@/lib/sejarah";
 
 /**
  * Merge localStorage child data with Supabase data.
@@ -209,6 +217,9 @@ export default function ParentPage() {
           {/* Weak Letters */}
           <WeakLetters child={child} />
 
+          {/* Sejarah Progress (Dhiya only) */}
+          {active === "dhiya" && <SejarahProgress />}
+
           {/* Sejarah Vocab Gaps (Dhiya only) */}
           {active === "dhiya" && <VocabGapsPanel />}
 
@@ -218,6 +229,202 @@ export default function ParentPage() {
         </div>
       )}
     </PageShell>
+  );
+}
+
+/* --------------------------- Sejarah Progress --------------------------- */
+
+function SejarahProgress() {
+  const [results, setResults] = useState<SejarahQuizResult[]>([]);
+  const [chapters, setChapters] = useState<ChapterInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetchSejarahResults("dhiya"),
+      fetchSejarahChapters(),
+    ]).then(([r, c]) => {
+      setResults(r);
+      setChapters(c);
+      setLoading(false);
+    });
+  }, []);
+
+  // Compute per-chapter best scores
+  const chapterStats = useMemo(() => {
+    const map = new Map<
+      number,
+      { best: number; total: number; attempts: number; totalCorrect: number; totalQ: number }
+    >();
+    for (const r of results) {
+      const prev = map.get(r.chapter) ?? {
+        best: 0,
+        total: 0,
+        attempts: 0,
+        totalCorrect: 0,
+        totalQ: 0,
+      };
+      const pct = r.total_questions > 0
+        ? Math.round((r.correct_answers / r.total_questions) * 100)
+        : 0;
+      prev.best = Math.max(prev.best, pct);
+      prev.attempts += 1;
+      prev.totalCorrect += r.correct_answers;
+      prev.totalQ += r.total_questions;
+      map.set(r.chapter, prev);
+    }
+    return map;
+  }, [results]);
+
+  // Overall stats
+  const overall = useMemo(() => {
+    const totalQ = results.reduce((a, r) => a + r.total_questions, 0);
+    const totalC = results.reduce((a, r) => a + r.correct_answers, 0);
+    const totalPts = results.reduce((a, r) => a + (r.points_earned ?? 0), 0);
+    return {
+      sessions: results.length,
+      accuracy: totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0,
+      totalQ,
+      totalPts,
+    };
+  }, [results]);
+
+  return (
+    <div className="rounded-[var(--radius-blob)] bg-white/80 p-5 shadow-[var(--shadow-soft)]">
+      <h3 className="mb-3 font-display text-lg font-bold text-grape-600">
+        📜 Sejarah Tingkatan 3
+      </h3>
+
+      {loading ? (
+        <p className="text-sm text-ink/50">Loading...</p>
+      ) : results.length === 0 ? (
+        <div className="text-center py-4">
+          <p className="text-3xl mb-2">📚</p>
+          <p className="text-sm text-ink/50">
+            Dhiya belum mula kuiz Sejarah. {chapters.length} bab tersedia dengan {chapters.reduce((a, c) => a + c.questionCount, 0)} soalan.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Overall stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col items-center rounded-2xl bg-grape-50 p-3">
+              <span className="font-display text-2xl font-bold text-grape-600">
+                {overall.accuracy}%
+              </span>
+              <span className="text-xs font-semibold text-ink/50">Accuracy</span>
+            </div>
+            <div className="flex flex-col items-center rounded-2xl bg-grape-50 p-3">
+              <span className="font-display text-2xl font-bold text-grape-600">
+                {overall.sessions}
+              </span>
+              <span className="text-xs font-semibold text-ink/50">Quizzes</span>
+            </div>
+            <div className="flex flex-col items-center rounded-2xl bg-grape-50 p-3">
+              <span className="font-display text-2xl font-bold text-grape-600">
+                {overall.totalPts}
+              </span>
+              <span className="text-xs font-semibold text-ink/50">Points</span>
+            </div>
+          </div>
+
+          {/* Per-chapter grid */}
+          <div>
+            <p className="mb-2 text-sm font-semibold text-ink/60">Per-chapter scores</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {chapters.map((ch) => {
+                const stat = chapterStats.get(ch.chapter);
+                const best = stat?.best ?? 0;
+                const attempts = stat?.attempts ?? 0;
+                const barColor =
+                  best >= 90
+                    ? "bg-leaf-500"
+                    : best >= 70
+                      ? "bg-sunny-400"
+                      : best > 0
+                        ? "bg-coral-400"
+                        : "bg-black/10";
+                return (
+                  <div
+                    key={ch.chapter}
+                    className="flex flex-col gap-1 rounded-2xl bg-white/70 p-3"
+                  >
+                    <span className="text-xs font-bold text-grape-600">
+                      Bab {ch.chapter}
+                    </span>
+                    <span
+                      className="text-xs text-ink/50 leading-tight"
+                      title={ch.chapter_title}
+                    >
+                      {ch.chapter_title.length > 25
+                        ? ch.chapter_title.slice(0, 25) + "..."
+                        : ch.chapter_title}
+                    </span>
+                    <div className="mt-1 h-2 w-full rounded-full bg-black/5">
+                      <div
+                        className={cn("h-full rounded-full transition-all", barColor)}
+                        style={{ width: `${best}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ink">
+                        {best > 0 ? `${best}%` : "—"}
+                      </span>
+                      <span className="text-xs text-ink/40">
+                        {attempts > 0 ? `${attempts}x` : ""}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recent quizzes */}
+          {results.length > 0 && (
+            <div>
+              <p className="mb-2 text-sm font-semibold text-ink/60">Recent quizzes</p>
+              <div className="space-y-1.5">
+                {results.slice(0, 5).map((r) => {
+                  const pct = r.total_questions > 0
+                    ? Math.round((r.correct_answers / r.total_questions) * 100)
+                    : 0;
+                  const dateStr = new Date(r.created_at).toLocaleDateString("en-MY", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  return (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between rounded-xl bg-white/60 px-3 py-2"
+                    >
+                      <span className="text-sm font-semibold text-ink">
+                        Bab {r.chapter}
+                      </span>
+                      <span className="text-xs text-ink/40">{dateStr}</span>
+                      <span
+                        className={cn(
+                          "text-sm font-bold",
+                          pct >= 90
+                            ? "text-leaf-600"
+                            : pct >= 70
+                              ? "text-sunny-600"
+                              : "text-coral-600",
+                        )}
+                      >
+                        {r.correct_answers}/{r.total_questions} ({pct}%)
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
