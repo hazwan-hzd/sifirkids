@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  BarChart as RechartsBarChart,
+  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -10,23 +10,32 @@ import {
   Cell,
 } from "recharts";
 
-export interface BarDatum {
+export interface TimeDatum {
   key: string;
   label: string;
-  value: number;
+  /** minutes spent */
+  minutes: number;
 }
 
-/** Readable bar chart built on Recharts. */
-export function BarChart({
+/** Format minutes to readable string. */
+function fmtMin(m: number): string {
+  if (m < 1) return "<1m";
+  if (m < 60) return `${Math.round(m)}m`;
+  const h = Math.floor(m / 60);
+  const rem = Math.round(m % 60);
+  return rem > 0 ? `${h}h ${rem}m` : `${h}h`;
+}
+
+/** Horizontal bar chart showing daily time spent. */
+export function TimeChart({
   data,
-  color = "#8b4dff",
   title,
 }: {
-  data: BarDatum[];
-  color?: string;
+  data: TimeDatum[];
   title?: string;
 }) {
-  const max = Math.max(1, ...data.map((d) => d.value));
+  const max = Math.max(1, ...data.map((d) => d.minutes));
+  const color = "#6366f1"; // indigo
 
   return (
     <div className="rounded-3xl bg-white/85 p-5 shadow-[var(--shadow-soft)] border border-black/5">
@@ -36,7 +45,7 @@ export function BarChart({
         </h4>
       )}
       <ResponsiveContainer width="100%" height={180}>
-        <RechartsBarChart
+        <BarChart
           data={data}
           margin={{ top: 8, right: 4, bottom: 0, left: -20 }}
           barCategoryGap="20%"
@@ -51,6 +60,7 @@ export function BarChart({
             tick={{ fontSize: 10, fill: "#2c214080" }}
             axisLine={false}
             tickLine={false}
+            tickFormatter={(v: number) => fmtMin(v)}
             allowDecimals={false}
           />
           <Tooltip
@@ -62,19 +72,19 @@ export function BarChart({
               fontWeight: 600,
             }}
             cursor={{ fill: "#2c214008", radius: 8 }}
-            formatter={(value: any) => [value, ""]}
+            formatter={(value: any) => [fmtMin(Number(value)), "Time"]}
             labelFormatter={(label: any) => String(label)}
           />
-          <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={28}>
-            {data.map((d, i) => (
+          <Bar dataKey="minutes" radius={[6, 6, 0, 0]} maxBarSize={28}>
+            {data.map((d) => (
               <Cell
                 key={d.key}
-                fill={d.value > 0 ? color : "#2c214015"}
-                fillOpacity={d.value > 0 ? 0.85 : 0.3}
+                fill={d.minutes > 0 ? color : "#2c214015"}
+                fillOpacity={d.minutes > 0 ? 0.8 : 0.3}
               />
             ))}
           </Bar>
-        </RechartsBarChart>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

@@ -11,6 +11,8 @@ import { PinGate } from "./PinGate";
 import { MetricCard } from "./MetricCard";
 import { BarChart, type BarDatum } from "./BarChart";
 import { Sparkline } from "./Sparkline";
+import { TopicPieChart, type PieDatum } from "./TopicPieChart";
+import { TimeChart, type TimeDatum } from "./TimeChart";
 import { MultiplicationGrid, ArabicGrid } from "./MasteryGrid";
 import { RewardApprovals } from "./RewardApprovals";
 import { Settings } from "./Settings";
@@ -112,11 +114,6 @@ export default function ParentPage() {
     const arabicMastered = ARABIC_LETTERS.filter((l) => child.arabic[l.id]?.mastered).length;
 
     const days = lastNDays(14);
-    const pointsPerDay: BarDatum[] = days.map((d) => ({
-      key: d,
-      label: dayLabel(d),
-      value: child.daily.history[d]?.pointsEarned ?? 0,
-    }));
     const questionsPerDay: BarDatum[] = days.map((d) => ({
       key: d,
       label: dayLabel(d),
@@ -124,7 +121,39 @@ export default function ParentPage() {
     }));
     const accuracyTrend = sessions.slice(-20).map((s) => (s.total ? (s.correct / s.total) * 100 : 0));
 
-    return { totalQ, accuracy, mathMastered, arabicMastered, pointsPerDay, questionsPerDay, accuracyTrend };
+    // Time spent per day (convert seconds to minutes)
+    const timePerDay: TimeDatum[] = days.map((d) => {
+      const daySessions = sessions.filter((s) => s.date.startsWith(d));
+      const totalSec = daySessions.reduce((a, s) => a + s.durationSec, 0);
+      return { key: d, label: dayLabel(d), minutes: Math.round(totalSec / 60) };
+    });
+
+    // Topic/module distribution
+    const moduleCounts: Record<string, number> = {};
+    for (const s of sessions) {
+      moduleCounts[s.module] = (moduleCounts[s.module] ?? 0) + 1;
+    }
+    const MODULE_COLORS: Record<string, string> = {
+      multiplication: "#ff5a47",
+      arabic: "#14c2a0",
+      sejarah: "#8b4dff",
+      peribahasa: "#e052a0",
+      science: "#3b82f6",
+    };
+    const MODULE_LABELS: Record<string, string> = {
+      multiplication: "Times Tables",
+      arabic: "Alif Ba Ta",
+      sejarah: "Sejarah",
+      peribahasa: "Peribahasa",
+      science: "Sains",
+    };
+    const topicDistribution: PieDatum[] = Object.entries(moduleCounts).map(([mod, count]) => ({
+      name: MODULE_LABELS[mod] ?? mod,
+      value: count,
+      color: MODULE_COLORS[mod] ?? "#94a3b8",
+    }));
+
+    return { totalQ, accuracy, mathMastered, arabicMastered, questionsPerDay, accuracyTrend, timePerDay, topicDistribution };
   }, [child]);
 
   if (!hydrated) {
@@ -220,10 +249,13 @@ export default function ParentPage() {
 
           {/* Charts */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <BarChart title="Points earned (14 days)" data={stats.pointsPerDay} color={COLOR_CLASSES.grape.solid} />
-            <BarChart title="Questions answered (14 days)" data={stats.questionsPerDay} color={c.solid} />
+            <TimeChart title="Time spent (14 days)" data={stats.timePerDay} />
+            <TopicPieChart title="Topics breakdown" data={stats.topicDistribution} />
           </div>
-          <Sparkline title="Accuracy trend (recent quizzes)" values={stats.accuracyTrend} color={COLOR_CLASSES.teal.solid} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <BarChart title="Questions answered (14 days)" data={stats.questionsPerDay} color={c.solid} />
+            <Sparkline title="Accuracy trend (recent quizzes)" values={stats.accuracyTrend} color={COLOR_CLASSES.teal.solid} />
+          </div>
 
           {/* Mastery */}
           <MultiplicationGrid child={child} />
