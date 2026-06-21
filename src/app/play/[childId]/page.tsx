@@ -3,9 +3,10 @@
 import { use, useEffect, useRef } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CHILD_IDS, COLOR_CLASSES, TABLES, ARABIC_LETTERS } from "@/lib/data";
+import { CHILD_IDS, COLOR_CLASSES, TABLES, ARABIC_LETTERS, CHILD_GRADE, GRADE_LABEL } from "@/lib/data";
 import type { ChildId } from "@/lib/types";
 import { useApp } from "@/lib/store";
+import { subjectsForGrade } from "@/lib/modules";
 import { PageShell, Loading, PointsBadge, BackButton, ProgressBar } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,9 @@ export default function ChildHubPage({
   const mathPct = Math.round((mathMastered / TABLES.length) * 100);
   const arabicMastered = ARABIC_LETTERS.filter((l) => child.arabic[l.id]?.mastered).length;
   const arabicPct = Math.round((arabicMastered / ARABIC_LETTERS.length) * 100);
+
+  const grade = CHILD_GRADE[id];
+  const subjects = subjectsForGrade(grade);
 
   return (
     <PageShell>
@@ -120,6 +124,41 @@ export default function ChildHubPage({
             Tingkatan 1, 2 & 3 — Simpulan Bahasa & Peribahasa
           </span>
         </Link>
+      </div>
+
+      {/* School subjects — tailored to this child's grade */}
+      <div className="mt-8">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-xl font-bold text-ink/80">
+            Subjek Sekolah
+          </h2>
+          <span className="rounded-full bg-white/70 px-3 py-1 font-display text-sm font-semibold text-ink/60">
+            {GRADE_LABEL[grade]}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {subjects.map((s, i) => {
+            const sc = COLOR_CLASSES[s.color];
+            return (
+              <Link
+                key={s.key}
+                href={`/play/${id}/subject/${s.key}`}
+                role="button"
+                className={cn(
+                  "btn-pop tap animate-rise flex flex-col gap-1 rounded-[var(--radius-blob)] p-4",
+                  sc.bgSoft,
+                )}
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <span className="text-4xl">{s.emoji}</span>
+                <span className={cn("font-display text-base font-bold", sc.text)}>
+                  {s.title}
+                </span>
+                <span className="text-xs text-ink/60">{s.subtitle}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-3">

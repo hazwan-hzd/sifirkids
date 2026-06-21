@@ -1,4 +1,4 @@
-import type { ChildId, ColorKey, Profile } from "./types";
+import type { ChildId, ColorKey, Grade, Profile } from "./types";
 
 /** The three children. Order = display order on the home screen. */
 export const PROFILES: Profile[] = [
@@ -6,6 +6,20 @@ export const PROFILES: Profile[] = [
   { id: "dhiya", name: "Dhiya", avatar: "🌟", color: "teal" },
   { id: "ilyas", name: "Ilyas", avatar: "🚀", color: "sky" },
 ];
+
+/** Which school level each child is in. Subject modules key their content off this. */
+export const CHILD_GRADE: Record<ChildId, Grade> = {
+  ilyas: "std1", // Darjah 1 (KSSR)
+  hafeeza: "std4", // Darjah 4 (KSSR)
+  dhiya: "form3", // Tingkatan 3 (KSSM)
+};
+
+/** Human label for a grade, in Bahasa Melayu. */
+export const GRADE_LABEL: Record<Grade, string> = {
+  std1: "Darjah 1",
+  std4: "Darjah 4",
+  form3: "Tingkatan 3",
+};
 
 export function getProfile(id: ChildId): Profile {
   const p = PROFILES.find((x) => x.id === id);

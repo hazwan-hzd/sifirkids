@@ -3,7 +3,21 @@
 
 export type ChildId = "hafeeza" | "dhiya" | "ilyas";
 
-export type ModuleId = "multiplication" | "arabic" | "sejarah" | "peribahasa";
+export type ModuleId =
+  | "multiplication"
+  | "arabic"
+  | "sejarah"
+  | "peribahasa"
+  | "sains"
+  | "matematik"
+  | "english"
+  | "bahasamelayu"
+  | "pendidikanislam"
+  | "sivik"
+  | "geografi";
+
+/** School level a child sits at. Drives which subject content they see. */
+export type Grade = "std1" | "std4" | "form3";
 
 export type QuizMode = "random" | "standard";
 
