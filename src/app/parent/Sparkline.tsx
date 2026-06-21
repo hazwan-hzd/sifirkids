@@ -52,7 +52,7 @@ export function Sparkline({
       {
         strokeDashoffset: [length, 0],
         duration: 1100,
-        ease: "easeInOutQuad",
+        ease: "inOutQuad",
       }
     );
 
@@ -63,7 +63,7 @@ export function Sparkline({
         {
           opacity: [0, 0.12],
           duration: 900,
-          ease: "easeOutQuad",
+          ease: "outQuad",
         }
       );
     }
@@ -76,7 +76,7 @@ export function Sparkline({
           r: [0, 1.4],
           delay: stagger(40, { start: 400 }),
           duration: 400,
-          ease: "easeOutBack",
+          ease: "outBack",
         }
       );
     }

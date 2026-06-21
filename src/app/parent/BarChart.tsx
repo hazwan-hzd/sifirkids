@@ -44,7 +44,7 @@ export function BarChart({
         opacity: (el: any) => parseFloat(el.getAttribute("data-opacity") || "1"),
         delay: stagger(30),
         duration: 1000,
-        ease: "easeOutElastic(1, 0.85)",
+        ease: "outElastic",
       }
     );
 
@@ -56,7 +56,7 @@ export function BarChart({
         y: (el: any) => parseFloat(el.getAttribute("data-y") || "0") - 3,
         delay: stagger(30, { start: 300 }),
         duration: 600,
-        ease: "easeOutQuad",
+        ease: "outQuad",
       }
     );
   }, [data, height]);
