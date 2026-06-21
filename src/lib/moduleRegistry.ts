@@ -89,6 +89,17 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     children: "all",
     animationDelay: 320,
   },
+  {
+    id: "bahasa_melayu",
+    label: "Bahasa Melayu",
+    emoji: "📝",
+    accent: "sunny",
+    description: "Kuiz BM KSSR/KSSM - mengikut tahap umur",
+    status: "coming_soon",
+    parentOnly: true,
+    children: "all",
+    animationDelay: 400,
+  },
 ];
 
 /** Get modules visible to a specific child, respecting status. */

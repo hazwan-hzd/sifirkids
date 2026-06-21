@@ -1,6 +1,7 @@
 import { supabase, logQuizToSupabaseDirect } from "./supabase";
 import { logSejarahQuizDirect, logVocabGapDirect } from "./sejarah";
 import { logPeribahasaQuizDirect } from "./peribahasa";
+import { logBMQuizDirect, logVocabGapDirect as logBMVocabGapDirect } from "./bahasamelayu";
 
 export type QueueItem =
   | {
@@ -70,6 +71,37 @@ export type QueueItem =
         question_id: string | null;
         word: string;
         chapter: number | null;
+        context: string | null;
+      };
+    }
+  | {
+      type: "bahasa_melayu";
+      payload: {
+        result: {
+          child_id: string;
+          level: string;
+          topic: number;
+          total_questions: number;
+          correct_answers: number;
+          duration_sec: number;
+          points_earned: number;
+          vocab_gaps_logged: number;
+        };
+        answers: Array<{
+          question_id: string;
+          given_answer: string;
+          is_correct: boolean;
+          response_time_ms: number;
+        }>;
+      };
+    }
+  | {
+      type: "bm_vocab_gap";
+      payload: {
+        child_id: string;
+        question_id: string | null;
+        word: string;
+        topic: number | null;
         context: string | null;
       };
     };
@@ -155,6 +187,10 @@ export async function flushSyncQueue(): Promise<void> {
         await logPeribahasaQuizDirect(item.payload.result, item.payload.answers);
       } else if (item.type === "vocab_gap") {
         await logVocabGapDirect(item.payload);
+      } else if (item.type === "bahasa_melayu") {
+        await logBMQuizDirect(item.payload.result as Parameters<typeof logBMQuizDirect>[0], item.payload.answers);
+      } else if (item.type === "bm_vocab_gap") {
+        await logBMVocabGapDirect(item.payload);
       }
       console.log(`Synced item of type: ${item.type} successfully.`);
     } catch (err) {
