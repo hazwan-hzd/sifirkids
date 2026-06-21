@@ -123,6 +123,22 @@ export default function ChildHubPage({
           </span>
         </Link>
 
+        {/* Bahasa Melayu module — all children */}
+        <Link
+          href={`/play/${id}/bahasa_melayu`}
+          role="button"
+          className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-sunny-100 p-6"
+          style={{ animationDelay: "320ms" }}
+        >
+          <span className="text-6xl">📝</span>
+          <span className="font-display text-2xl font-bold text-sunny-600">
+            Bahasa Melayu
+          </span>
+          <span className="text-sm text-ink/70">
+            Kuiz BM KSSR/KSSM — mengikut tahap umur
+          </span>
+        </Link>
+
         {/* Locked / coming-soon modules — shaded out */}
         {getModulesForChild(id)
           .filter((m) => m.status === "coming_soon" || m.status === "locked")

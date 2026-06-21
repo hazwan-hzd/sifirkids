@@ -78,7 +78,6 @@ export function PinGate({ onUnlock }: { onUnlock: () => void }) {
       </div>
 
       {error && <p className="mt-3 font-display text-coral-600">Wrong PIN, try again</p>}
-      <p className="mt-4 text-xs text-ink/40">Default PIN is 1234</p>
 
       <style>{`@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}`}</style>
     </Card>

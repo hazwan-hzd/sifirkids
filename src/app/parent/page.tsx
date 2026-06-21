@@ -26,6 +26,18 @@ import {
   type SejarahQuizResult,
   type ChapterInfo,
 } from "@/lib/sejarah";
+import {
+  fetchVocabGaps as fetchBMVocabGaps,
+  toggleVocabReviewed as toggleBMVocabReviewed,
+  fetchQuizResults as fetchBMResults,
+  fetchTopics as fetchBMTopics,
+  levelForChild,
+  LEVEL_LABEL,
+  type BMQuestion,
+  type TopicInfo,
+  type BMQuizResult,
+  type BMVocabGap,
+} from "@/lib/bahasamelayu";
 
 /**
  * Merge localStorage child data with Supabase data.
@@ -139,6 +151,7 @@ export default function ParentPage() {
       sejarah: "#8b4dff",
       peribahasa: "#e052a0",
       science: "#3b82f6",
+      bahasa_melayu: "#eab308",
     };
     const MODULE_LABELS: Record<string, string> = {
       multiplication: "Times Tables",
@@ -146,6 +159,7 @@ export default function ParentPage() {
       sejarah: "Sejarah",
       peribahasa: "Peribahasa",
       science: "Sains",
+      bahasa_melayu: "Bahasa Melayu",
     };
     const topicDistribution: PieDatum[] = Object.entries(moduleCounts).map(([mod, count]) => ({
       name: MODULE_LABELS[mod] ?? mod,
@@ -267,8 +281,11 @@ export default function ParentPage() {
           {/* Sejarah Progress (Dhiya only) */}
           {active === "dhiya" && <SejarahProgress />}
 
-          {/* Sejarah Vocab Gaps (Dhiya only) */}
-          {active === "dhiya" && <VocabGapsPanel />}
+          {/* Bahasa Melayu Progress (All children) */}
+          <BahasaMelayuProgress childId={active} childName={child.profile.name} />
+
+          {/* Dynamic Vocab Gaps Panel (All children) */}
+          <VocabGapsPanel childId={active} childName={child.profile.name} />
 
           {/* Cross-child controls */}
           <RewardApprovals />
@@ -550,66 +567,319 @@ function WeakLetters({ child }: { child: ChildData }) {
   );
 }
 
+/* --------------------------- Bahasa Melayu Progress --------------------------- */
+
+interface BahasaMelayuProgressProps {
+  childId: ChildId;
+  childName: string;
+}
+
+function BahasaMelayuProgress({ childId, childName }: BahasaMelayuProgressProps) {
+  const [results, setResults] = useState<BMQuizResult[]>([]);
+  const [topics, setTopics] = useState<TopicInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const level = levelForChild(childId);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      fetchBMResults(childId),
+      fetchBMTopics(level),
+    ]).then(([r, t]) => {
+      setResults(r);
+      setTopics(t);
+      setLoading(false);
+    });
+  }, [childId, level]);
+
+  const topicStats = useMemo(() => {
+    const map = new Map<
+      number,
+      { best: number; total: number; attempts: number; totalCorrect: number; totalQ: number }
+    >();
+    for (const r of results) {
+      const prev = map.get(r.topic) ?? {
+        best: 0,
+        total: 0,
+        attempts: 0,
+        totalCorrect: 0,
+        totalQ: 0,
+      };
+      const pct = r.total_questions > 0
+        ? Math.round((r.correct_answers / r.total_questions) * 100)
+        : 0;
+      prev.best = Math.max(prev.best, pct);
+      prev.attempts += 1;
+      prev.totalCorrect += r.correct_answers;
+      prev.totalQ += r.total_questions;
+      map.set(r.topic, prev);
+    }
+    return map;
+  }, [results]);
+
+  const overall = useMemo(() => {
+    const totalQ = results.reduce((a, r) => a + r.total_questions, 0);
+    const totalC = results.reduce((a, r) => a + r.correct_answers, 0);
+    const totalPts = results.reduce((a, r) => a + (r.points_earned ?? 0), 0);
+    return {
+      sessions: results.length,
+      accuracy: totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0,
+      totalQ,
+      totalPts,
+    };
+  }, [results]);
+
+  const TOPIC_NAMES: Record<number, string> = {
+    1: "Tatabahasa",
+    2: "Karangan",
+  };
+
+  return (
+    <div className="rounded-[var(--radius-blob)] bg-white/80 p-5 shadow-[var(--shadow-soft)]">
+      <h3 className="mb-3 font-display text-lg font-bold text-sunny-600">
+        📝 Bahasa Melayu ({LEVEL_LABEL[level]})
+      </h3>
+
+      {loading ? (
+        <p className="text-sm text-ink/50">Loading...</p>
+      ) : results.length === 0 ? (
+        <div className="text-center py-4">
+          <p className="text-3xl mb-2">📖</p>
+          <p className="text-sm text-ink/50">
+            {childName} belum mula kuiz Bahasa Melayu. {topics.length} subtopik tersedia.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Overall stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col items-center rounded-2xl bg-sunny-50 p-3">
+              <span className="font-display text-2xl font-bold text-sunny-600">
+                {overall.accuracy}%
+              </span>
+              <span className="text-xs font-semibold text-ink/50">Accuracy</span>
+            </div>
+            <div className="flex flex-col items-center rounded-2xl bg-sunny-50 p-3">
+              <span className="font-display text-2xl font-bold text-sunny-600">
+                {overall.sessions}
+              </span>
+              <span className="text-xs font-semibold text-ink/50">Quizzes</span>
+            </div>
+            <div className="flex flex-col items-center rounded-2xl bg-sunny-50 p-3">
+              <span className="font-display text-2xl font-bold text-sunny-600">
+                {overall.totalPts}
+              </span>
+              <span className="text-xs font-semibold text-ink/50">Points</span>
+            </div>
+          </div>
+
+          {/* Per-topic grid */}
+          <div>
+            <p className="mb-2 text-sm font-semibold text-ink/60">Per-topic scores</p>
+            <div className="grid grid-cols-2 gap-2">
+              {topics.map((t) => {
+                const stat = topicStats.get(t.topic);
+                const best = stat?.best ?? 0;
+                const attempts = stat?.attempts ?? 0;
+                const barColor =
+                  best >= 90
+                    ? "bg-leaf-500"
+                    : best >= 70
+                      ? "bg-sunny-400"
+                      : best > 0
+                        ? "bg-coral-400"
+                        : "bg-black/10";
+                const displayName = TOPIC_NAMES[t.topic] || t.topic_title;
+                return (
+                  <div
+                    key={t.topic}
+                    className="flex flex-col gap-1 rounded-2xl bg-white/70 p-3"
+                  >
+                    <span className="text-xs font-bold text-sunny-600">
+                      Topik {t.topic}
+                    </span>
+                    <span className="text-xs text-ink/50 leading-tight">
+                      {displayName}
+                    </span>
+                    <div className="mt-1 h-2 w-full rounded-full bg-black/5">
+                      <div
+                        className={cn("h-full rounded-full transition-all", barColor)}
+                        style={{ width: `${best}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ink">
+                        {best > 0 ? `${best}%` : "—"}
+                      </span>
+                      <span className="text-xs text-ink/40">
+                        {attempts > 0 ? `${attempts}x` : ""}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recent quizzes */}
+          {results.length > 0 && (
+            <div>
+              <p className="mb-2 text-sm font-semibold text-ink/60">Recent quizzes</p>
+              <div className="space-y-1.5">
+                {results.slice(0, 5).map((r) => {
+                  const pct = r.total_questions > 0
+                    ? Math.round((r.correct_answers / r.total_questions) * 100)
+                    : 0;
+                  const dateStr = new Date(r.created_at).toLocaleDateString("en-MY", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  return (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between rounded-xl bg-white/60 px-3 py-2"
+                    >
+                      <span className="text-sm font-semibold text-ink">
+                        {TOPIC_NAMES[r.topic] || `Topik ${r.topic}`}
+                      </span>
+                      <span className="text-xs text-ink/40">{dateStr}</span>
+                      <span
+                        className={cn(
+                          "text-sm font-bold",
+                          pct >= 90
+                            ? "text-leaf-600"
+                            : pct >= 70
+                              ? "text-sunny-600"
+                              : "text-coral-600",
+                        )}
+                      >
+                        {r.correct_answers}/{r.total_questions} ({pct}%)
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ----------------------------- Vocab Gaps ----------------------------- */
 
-function VocabGapsPanel() {
-  const [gaps, setGaps] = useState<SejarahVocabGap[]>([]);
+interface VocabGapsPanelProps {
+  childId: ChildId;
+  childName: string;
+}
+
+interface CombinedVocabGap {
+  id: string;
+  word: string;
+  source: "sejarah" | "bahasa_melayu";
+  chapterOrTopic: number;
+  reviewed: boolean;
+  context: string | null;
+}
+
+function VocabGapsPanel({ childId, childName }: VocabGapsPanelProps) {
+  const [gaps, setGaps] = useState<CombinedVocabGap[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchVocabGaps("dhiya").then((data) => {
-      setGaps(data);
+    setLoading(true);
+    const promises: Promise<any>[] = [fetchBMVocabGaps(childId)];
+    if (childId === "dhiya") {
+      promises.push(fetchVocabGaps("dhiya"));
+    }
+
+    Promise.all(promises).then(([bmData, sejData]) => {
+      const combined: CombinedVocabGap[] = [];
+      ((bmData as BMVocabGap[]) ?? []).forEach((g) => {
+        combined.push({
+          id: g.id,
+          word: g.word,
+          source: "bahasa_melayu",
+          chapterOrTopic: g.topic ?? 0,
+          reviewed: g.reviewed,
+          context: g.context,
+        });
+      });
+      if (sejData) {
+        ((sejData as SejarahVocabGap[]) ?? []).forEach((g) => {
+          combined.push({
+            id: g.id,
+            word: g.word,
+            source: "sejarah",
+            chapterOrTopic: g.chapter ?? 0,
+            reviewed: g.reviewed,
+            context: g.context,
+          });
+        });
+      }
+      setGaps(combined);
       setLoading(false);
     });
-  }, []);
+  }, [childId]);
 
-  const handleToggle = async (id: string, current: boolean) => {
-    await toggleVocabReviewed(id, !current);
+  const handleToggle = async (id: string, source: "sejarah" | "bahasa_melayu", current: boolean) => {
+    if (source === "sejarah") {
+      await toggleVocabReviewed(id, !current);
+    } else {
+      await toggleBMVocabReviewed(id, !current);
+    }
     setGaps((prev) =>
       prev.map((g) => (g.id === id ? { ...g, reviewed: !current } : g)),
     );
   };
 
-  // Group by chapter
+  // Group by source and chapter/topic
   const grouped = useMemo(() => {
-    const map = new Map<number, SejarahVocabGap[]>();
+    const map = new Map<string, CombinedVocabGap[]>();
     for (const g of gaps) {
-      const ch = g.chapter ?? 0;
-      if (!map.has(ch)) map.set(ch, []);
-      map.get(ch)!.push(g);
+      const label = g.source === "sejarah" 
+        ? `Sejarah - Bab ${g.chapterOrTopic}`
+        : `Bahasa Melayu - ${g.chapterOrTopic === 1 ? "Tatabahasa" : "Karangan"}`;
+      if (!map.has(label)) map.set(label, []);
+      map.get(label)!.push(g);
     }
-    return Array.from(map.entries()).sort(([a], [b]) => a - b);
+    return Array.from(map.entries()).sort();
   }, [gaps]);
 
   return (
     <div className="rounded-[var(--radius-blob)] bg-white/80 p-5 shadow-[var(--shadow-soft)]">
       <h3 className="mb-3 font-display text-lg font-bold text-teal-600">
-        📝 Dhiya - Perkataan Tak Paham
+        📝 {childName} - Perkataan Tak Paham
       </h3>
 
       {loading ? (
         <p className="text-sm text-ink/50">Loading...</p>
       ) : gaps.length === 0 ? (
         <p className="text-sm text-ink/50">
-          No words flagged yet. Words will appear here when Dhiya marks them during Sejarah quizzes.
+          No words flagged yet. Words will appear here when {childName} marks them during BM or Sejarah quizzes.
         </p>
       ) : (
         <div className="space-y-4">
-          {grouped.map(([chapter, words]) => (
-            <div key={chapter}>
+          {grouped.map(([sectionLabel, words]) => (
+            <div key={sectionLabel}>
               <p className="mb-1.5 text-sm font-bold text-teal-600">
-                Bab {chapter}
+                {sectionLabel}
               </p>
               <div className="flex flex-wrap gap-2">
                 {words.map((w) => (
                   <button
                     key={w.id}
-                    onClick={() => handleToggle(w.id, w.reviewed)}
+                    onClick={() => handleToggle(w.id, w.source, w.reviewed)}
                     className={cn(
                       "rounded-xl px-3 py-1.5 text-sm font-semibold transition",
                       w.reviewed
                         ? "bg-leaf-100 text-leaf-600 line-through"
-                        : "bg-teal-100 text-teal-800",
+                        : w.source === "sejarah"
+                          ? "bg-teal-100 text-teal-800"
+                          : "bg-sunny-100 text-sunny-800",
                     )}
                     title={w.context ? `Context: ${w.context.slice(0, 60)}...` : ""}
                   >
