@@ -20,8 +20,7 @@ import {
   fetchChapters,
   fetchQuestions,
   fetchQuizResults,
-  logSejarahResult,
-  logSejarahAnswers,
+  logSejarahQuiz,
   logVocabGap,
   type SejarahQuestion,
   type ChapterInfo,
@@ -201,19 +200,18 @@ export default function SejarahPage({
       });
 
       // Save to Supabase sejarah tables
-      logSejarahResult({
-        child_id: "dhiya",
-        chapter: activeChapter,
-        total_questions: questions.length,
-        correct_answers: correctCount,
-        duration_sec: totalDurationSec,
-        points_earned: pointsEarned,
-        vocab_gaps_logged: vocabGaps.length,
-      }).then((resultId) => {
-        if (resultId) {
-          logSejarahAnswers(resultId, answers);
-        }
-      });
+      logSejarahQuiz(
+        {
+          child_id: "dhiya",
+          chapter: activeChapter,
+          total_questions: questions.length,
+          correct_answers: correctCount,
+          duration_sec: totalDurationSec,
+          points_earned: pointsEarned,
+          vocab_gaps_logged: vocabGaps.length,
+        },
+        answers,
+      );
 
       setResultPoints(pointsEarned);
       setShowConfetti(correctCount === questions.length);

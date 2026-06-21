@@ -20,8 +20,7 @@ import {
   fetchPeribahasaTingkatan,
   fetchPeribahasaQuestions,
   fetchPeribahasaResults,
-  logPeribahasaResult,
-  logPeribahasaAnswers,
+  logPeribahasaQuiz,
   type PeribahasaQuestion,
   type TingkatanInfo,
   type PeribahasaQuizResult,
@@ -194,18 +193,17 @@ export default function PeribahasaPage({
       });
 
       // Save to Supabase peribahasa tables
-      logPeribahasaResult({
-        child_id: id,
-        tingkatan: activeTingkatan,
-        total_questions: questions.length,
-        correct_answers: correctCount,
-        duration_sec: totalDurationSec,
-        points_earned: pointsEarned,
-      }).then((resultId) => {
-        if (resultId) {
-          logPeribahasaAnswers(resultId, answers);
-        }
-      });
+      logPeribahasaQuiz(
+        {
+          child_id: id,
+          tingkatan: activeTingkatan,
+          total_questions: questions.length,
+          correct_answers: correctCount,
+          duration_sec: totalDurationSec,
+          points_earned: pointsEarned,
+        },
+        answers,
+      );
 
       setResultPoints(pointsEarned);
       setShowConfetti(correctCount === questions.length);

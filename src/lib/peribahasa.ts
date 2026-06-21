@@ -104,30 +104,29 @@ export async function fetchPeribahasaResults(
 
 /* ----------------------------- Mutations ----------------------------- */
 
-/** Log a completed quiz result. Returns the result ID. */
-export async function logPeribahasaResult(result: {
+/** Log a completed quiz result directly. Throws on failure. */
+export async function logPeribahasaResultDirect(result: {
   child_id: string;
   tingkatan: number;
   total_questions: number;
   correct_answers: number;
   duration_sec: number;
   points_earned: number;
-}): Promise<string | null> {
-  if (!supabase) return null;
+}): Promise<string> {
+  if (!supabase) throw new Error("Supabase client not initialized");
   const { data, error } = await supabase
     .from("peribahasa_quiz_results")
     .insert(result)
     .select("id")
     .single();
-  if (error) {
-    console.error("Error logging peribahasa result:", error);
-    return null;
+  if (error || !data) {
+    throw error || new Error("Failed to log peribahasa result");
   }
-  return data?.id ?? null;
+  return data.id;
 }
 
-/** Log individual answers for a quiz. */
-export async function logPeribahasaAnswers(
+/** Log individual answers directly. Throws on failure. */
+export async function logPeribahasaAnswersDirect(
   resultId: string,
   answers: Array<{
     question_id: string;
@@ -136,10 +135,66 @@ export async function logPeribahasaAnswers(
     response_time_ms: number;
   }>,
 ): Promise<void> {
-  if (!supabase || answers.length === 0) return;
+  if (!supabase) throw new Error("Supabase client not initialized");
+  if (answers.length === 0) return;
   const rows = answers.map((a) => ({ ...a, result_id: resultId }));
   const { error } = await supabase.from("peribahasa_answer_log").insert(rows);
   if (error) {
-    console.error("Error logging peribahasa answers:", error);
+    throw error;
   }
 }
+
+/** Log a completed quiz result and answers directly. Throws on failure. */
+export async function logPeribahasaQuizDirect(
+  result: {
+    child_id: string;
+    tingkatan: number;
+    total_questions: number;
+    correct_answers: number;
+    duration_sec: number;
+    points_earned: number;
+  },
+  answers: Array<{
+    question_id: string;
+    given_answer: string;
+    is_correct: boolean;
+    response_time_ms: number;
+  }>,
+): Promise<void> {
+  const resultId = await logPeribahasaResultDirect(result);
+  await logPeribahasaAnswersDirect(resultId, answers);
+}
+
+/** Log a completed peribahasa quiz. If offline, queues the payload locally. */
+export async function logPeribahasaQuiz(
+  result: {
+    child_id: string;
+    tingkatan: number;
+    total_questions: number;
+    correct_answers: number;
+    duration_sec: number;
+    points_earned: number;
+  },
+  answers: Array<{
+    question_id: string;
+    given_answer: string;
+    is_correct: boolean;
+    response_time_ms: number;
+  }>,
+): Promise<void> {
+  try {
+    await logPeribahasaQuizDirect(result, answers);
+  } catch (err) {
+    console.error("Peribahasa logging failed, queueing offline:", err);
+    try {
+      const { enqueueSyncItem } = await import("./sync-queue");
+      enqueueSyncItem({
+        type: "peribahasa",
+        payload: { result, answers },
+      });
+    } catch (queueErr) {
+      console.error("Failed to queue peribahasa sync item:", queueErr);
+    }
+  }
+}
+

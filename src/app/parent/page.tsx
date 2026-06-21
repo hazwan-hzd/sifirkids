@@ -91,7 +91,7 @@ function mergeChildData(local: ChildData, remote: SupabaseChildData | undefined)
 
 export default function ParentPage() {
   const { state, hydrated } = useApp();
-  const { data: sbData, loading: sbLoading } = useSupabaseData();
+  const { data: sbData, loading: sbLoading, error: sbError, refresh: sbRefresh } = useSupabaseData();
   const [unlocked, setUnlocked] = useState(false);
   const [active, setActive] = useState<ChildId>(PROFILES[0].id);
 
@@ -147,18 +147,33 @@ export default function ParentPage() {
         <PinGate onUnlock={() => setUnlocked(true)} />
       ) : (
         <div className="space-y-6">
-          {/* Data source indicator */}
-          {sbData && (
-            <div className="flex items-center justify-center gap-2 rounded-xl bg-leaf-100 px-3 py-2 text-sm font-semibold text-leaf-600">
-              ☁️ Synced from cloud
-              {sbLoading && " (loading...)"}
-            </div>
-          )}
-          {!sbData && !sbLoading && (
-            <div className="flex items-center justify-center gap-2 rounded-xl bg-sunny-100 px-3 py-2 text-sm font-semibold text-sunny-600">
-              📱 Local data only (this device)
-            </div>
-          )}
+          {/* Data source indicator & manual refresh */}
+          <div className="flex items-center gap-2">
+            {sbData && !sbError && (
+              <div className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-leaf-100 px-3 py-2 text-sm font-semibold text-leaf-600">
+                ☁️ Synced from cloud
+                {sbLoading && " (loading...)"}
+              </div>
+            )}
+            {sbError && (
+              <div className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-coral-100 px-3 py-2 text-sm font-semibold text-coral-600">
+                ⚠️ Sync error: {sbError}
+              </div>
+            )}
+            {!sbData && !sbLoading && !sbError && (
+              <div className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-sunny-100 px-3 py-2 text-sm font-semibold text-sunny-600">
+                📱 Local data only (this device)
+              </div>
+            )}
+            <button
+              onClick={sbRefresh}
+              disabled={sbLoading}
+              className="tap rounded-xl bg-white/70 hover:bg-white px-3 py-2 text-sm font-bold text-ink/70 transition border border-black/5 disabled:opacity-50"
+              title="Sync now"
+            >
+              🔄
+            </button>
+          </div>
 
           {/* Child tabs */}
           <div className="flex gap-2">

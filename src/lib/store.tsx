@@ -180,7 +180,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(defaultState);
   const [hydrated, setHydrated] = useState(false);
 
-  // load once on mount
+  // load once on mount & set up synchronization listeners
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -189,7 +189,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       /* corrupt save — keep defaults */
     }
     setHydrated(true);
+
+    // Initial queue flush
+    import("./sync-queue").then(({ flushSyncQueue }) => {
+      flushSyncQueue();
+    }).catch(err => console.error("Failed to load sync queue:", err));
+
+    // Listeners for network online and storage changes
+    const handleOnline = () => {
+      import("./sync-queue").then(({ flushSyncQueue }) => {
+        flushSyncQueue();
+      });
+    };
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          setState(reconcile(JSON.parse(e.newValue)));
+        } catch {
+          // ignore corrupt changes
+        }
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
+
 
   // Supabase cloud sync: merge remote data into state after hydration
   const sbSyncDone = useRef(false);

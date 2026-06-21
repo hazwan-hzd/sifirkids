@@ -7,6 +7,8 @@ import { CHILD_IDS, COLOR_CLASSES, TABLES, ARABIC_LETTERS } from "@/lib/data";
 import type { ChildId } from "@/lib/types";
 import { useApp } from "@/lib/store";
 import { PageShell, Loading, PointsBadge, BackButton, ProgressBar } from "@/components/ui";
+import { LockedModuleCard } from "@/components/LockedModuleCard";
+import { getModulesForChild } from "@/lib/moduleRegistry";
 import { cn } from "@/lib/utils";
 
 export default function ChildHubPage({
@@ -120,6 +122,13 @@ export default function ChildHubPage({
             Tingkatan 1, 2 & 3 — Simpulan Bahasa & Peribahasa
           </span>
         </Link>
+
+        {/* Locked / coming-soon modules — shaded out */}
+        {getModulesForChild(id)
+          .filter((m) => m.status === "coming_soon" || m.status === "locked")
+          .map((m) => (
+            <LockedModuleCard key={m.id} module={m} />
+          ))}
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-3">

@@ -1,11 +1,39 @@
 import { supabase } from "./supabase";
+import type { ChildId } from "./types";
 
 /* ------------------------------------------------------------------ */
-/* Sejarah module — Supabase client functions                         */
+/* Sains module — Supabase client functions                           */
+/* Mirrors sejarah.ts. Adds a `level` axis so each child gets          */
+/* age-appropriate questions:                                          */
+/*   Ilyas  -> "t1"  (KSSR Sains Tahun 1)                              */
+/*   Hafeeza-> "t4"  (KSSR Sains Tahun 4)                              */
+/*   Dhiya  -> "f3"  (KSSM Sains Tingkatan 3 / PT3)                    */
 /* ------------------------------------------------------------------ */
 
-export interface SejarahQuestion {
+export type ScienceLevel = "t1" | "t4" | "f3";
+
+/** Map a child to their schooling level. Drives which questions load. */
+const CHILD_LEVEL: Record<ChildId, ScienceLevel> = {
+  ilyas: "t1",
+  hafeeza: "t4",
+  dhiya: "f3",
+};
+
+export function levelForChild(childId: ChildId): ScienceLevel {
+  return CHILD_LEVEL[childId];
+}
+
+export const LEVEL_LABEL: Record<ScienceLevel, string> = {
+  t1: "Tahun 1",
+  t4: "Tahun 4",
+  f3: "Tingkatan 3",
+};
+
+export interface ScienceQuestion {
   id: string;
+  /** schooling level this question belongs to */
+  level: ScienceLevel;
+  /** KSSR/KSSM Sains topic group, numbered within a level */
   chapter: number;
   chapter_title: string;
   question_text: string;
@@ -14,34 +42,36 @@ export interface SejarahQuestion {
   correct_answer: string;
   explanation: string | null;
   image_url: string | null;
+  /** kbat = Kemahiran Berfikir Aras Tinggi (higher-order) */
   difficulty: "easy" | "standard" | "kbat";
   tags: string[] | null;
 }
 
-export interface SejarahVocabGap {
+export interface ScienceTermGap {
   id: string;
   child_id: string;
   question_id: string | null;
-  word: string;
+  term: string;
   chapter: number | null;
   context: string | null;
   reviewed: boolean;
   created_at: string;
 }
 
-export interface SejarahQuizResult {
+export interface ScienceQuizResult {
   id: string;
   child_id: string;
+  level: ScienceLevel;
   chapter: number;
   total_questions: number;
   correct_answers: number;
   duration_sec: number | null;
   points_earned: number | null;
-  vocab_gaps_logged: number;
+  term_gaps_logged: number;
   created_at: string;
 }
 
-/** Chapter metadata derived from questions in DB. */
+/** Chapter metadata derived from questions in DB, scoped to a level. */
 export interface ChapterInfo {
   chapter: number;
   chapter_title: string;
@@ -68,9 +98,8 @@ export async function fetchSeenQuestionIds(
   chapter: number,
 ): Promise<Set<string>> {
   if (!supabase) return new Set();
-  // Join answer_log -> quiz_results to filter by child + chapter
   const { data, error } = await supabase
-    .from("sejarah_answer_log")
+    .from("science_answer_log")
     .select("question_id, result_id!inner(child_id, chapter)")
     .eq("result_id.child_id", childId)
     .eq("result_id.chapter", chapter);
@@ -82,57 +111,53 @@ export async function fetchSeenQuestionIds(
 }
 
 /**
- * Fetch questions for a chapter with smart randomization.
- * - Prioritizes unseen questions (ones the child hasn't answered before)
- * - In "quick" mode: returns QUICK_QUIZ_COUNT questions
- * - In "full" mode: returns all questions
+ * Fetch questions for a level + chapter with smart randomization.
+ * - Always scoped to the child's level (age-appropriate)
+ * - Prioritizes unseen questions
+ * - "quick" mode returns QUICK_QUIZ_COUNT, "full" returns all
  */
 export async function fetchQuestions(
+  level: ScienceLevel,
   chapter: number,
   mode: QuizMode = "quick",
   childId?: string,
-): Promise<SejarahQuestion[]> {
+): Promise<ScienceQuestion[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
-    .from("sejarah_questions")
+    .from("science_questions")
     .select("*")
+    .eq("level", level)
     .eq("chapter", chapter)
     .order("created_at");
   if (error) {
-    console.error("Error fetching sejarah questions:", error);
+    console.error("Error fetching science questions:", error);
     return [];
   }
-  const allQuestions = (data ?? []) as SejarahQuestion[];
+  const allQuestions = (data ?? []) as ScienceQuestion[];
 
-  // Get previously seen IDs for smart prioritization
   const seenIds = childId
     ? await fetchSeenQuestionIds(childId, chapter)
     : new Set<string>();
 
-  // Split into unseen and seen
   const unseen = allQuestions.filter((q) => !seenIds.has(q.id));
   const seen = allQuestions.filter((q) => seenIds.has(q.id));
 
-  // Shuffle both pools independently
   shuffle(unseen);
   shuffle(seen);
 
-  // Prioritize unseen, then fill with seen
   const prioritized = [...unseen, ...seen];
 
-  if (mode === "full") {
-    return prioritized;
-  }
-  // Quick mode: take QUICK_QUIZ_COUNT
+  if (mode === "full") return prioritized;
   return prioritized.slice(0, QUICK_QUIZ_COUNT);
 }
 
-/** Fetch chapter list with question counts. */
-export async function fetchChapters(): Promise<ChapterInfo[]> {
+/** Fetch chapter list (with counts) for a single level. */
+export async function fetchChapters(level: ScienceLevel): Promise<ChapterInfo[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
-    .from("sejarah_questions")
-    .select("chapter, chapter_title");
+    .from("science_questions")
+    .select("chapter, chapter_title")
+    .eq("level", level);
   if (error) {
     console.error("Error fetching chapters:", error);
     return [];
@@ -160,10 +185,10 @@ export async function fetchChapters(): Promise<ChapterInfo[]> {
 export async function fetchQuizResults(
   childId: string,
   chapter?: number,
-): Promise<SejarahQuizResult[]> {
+): Promise<ScienceQuizResult[]> {
   if (!supabase) return [];
   let query = supabase
-    .from("sejarah_quiz_results")
+    .from("science_quiz_results")
     .select("*")
     .eq("child_id", childId)
     .order("created_at", { ascending: false })
@@ -176,35 +201,37 @@ export async function fetchQuizResults(
     console.error("Error fetching quiz results:", error);
     return [];
   }
-  return (data ?? []) as SejarahQuizResult[];
+  return (data ?? []) as ScienceQuizResult[];
 }
 
 /* ----------------------------- Mutations ----------------------------- */
 
-/** Log a completed quiz result directly. Throws on failure. */
-export async function logSejarahResultDirect(result: {
+/** Log a completed quiz result. Returns the result ID. */
+export async function logScienceResult(result: {
   child_id: string;
+  level: ScienceLevel;
   chapter: number;
   total_questions: number;
   correct_answers: number;
   duration_sec: number;
   points_earned: number;
-  vocab_gaps_logged: number;
-}): Promise<string> {
-  if (!supabase) throw new Error("Supabase client not initialized");
+  term_gaps_logged: number;
+}): Promise<string | null> {
+  if (!supabase) return null;
   const { data, error } = await supabase
-    .from("sejarah_quiz_results")
+    .from("science_quiz_results")
     .insert(result)
     .select("id")
     .single();
-  if (error || !data) {
-    throw error || new Error("Failed to log sejarah result");
+  if (error) {
+    console.error("Error logging science result:", error);
+    return null;
   }
-  return data.id;
+  return data?.id ?? null;
 }
 
-/** Log individual answers directly. Throws on failure. */
-export async function logSejarahAnswersDirect(
+/** Log individual answers for a quiz. */
+export async function logScienceAnswers(
   resultId: string,
   answers: Array<{
     question_id: string;
@@ -213,139 +240,55 @@ export async function logSejarahAnswersDirect(
     response_time_ms: number;
   }>,
 ): Promise<void> {
-  if (!supabase) throw new Error("Supabase client not initialized");
-  if (answers.length === 0) return;
+  if (!supabase || answers.length === 0) return;
   const rows = answers.map((a) => ({ ...a, result_id: resultId }));
-  const { error } = await supabase.from("sejarah_answer_log").insert(rows);
+  const { error } = await supabase.from("science_answer_log").insert(rows);
   if (error) {
-    throw error;
+    console.error("Error logging science answers:", error);
   }
 }
 
-/** Log a completed quiz result and answers directly. Throws on failure. */
-export async function logSejarahQuizDirect(
-  result: {
-    child_id: string;
-    chapter: number;
-    total_questions: number;
-    correct_answers: number;
-    duration_sec: number;
-    points_earned: number;
-    vocab_gaps_logged: number;
-  },
-  answers: Array<{
-    question_id: string;
-    given_answer: string;
-    is_correct: boolean;
-    response_time_ms: number;
-  }>,
-): Promise<void> {
-  const resultId = await logSejarahResultDirect(result);
-  await logSejarahAnswersDirect(resultId, answers);
-}
-
-/**
- * Log a completed sejarah quiz. If offline or write fails, queues the result in localStorage.
- */
-export async function logSejarahQuiz(
-  result: {
-    child_id: string;
-    chapter: number;
-    total_questions: number;
-    correct_answers: number;
-    duration_sec: number;
-    points_earned: number;
-    vocab_gaps_logged: number;
-  },
-  answers: Array<{
-    question_id: string;
-    given_answer: string;
-    is_correct: boolean;
-    response_time_ms: number;
-  }>,
-): Promise<void> {
-  try {
-    await logSejarahQuizDirect(result, answers);
-  } catch (err) {
-    console.error("Sejarah logging failed, queueing offline:", err);
-    try {
-      const { enqueueSyncItem } = await import("./sync-queue");
-      enqueueSyncItem({
-        type: "sejarah",
-        payload: { result, answers },
-      });
-    } catch (queueErr) {
-      console.error("Failed to queue sejarah sync item:", queueErr);
-    }
-  }
-}
-
-/** Save a vocabulary gap entry directly. Throws on failure. */
-export async function logVocabGapDirect(entry: {
+/** Save a science-term gap entry (term the child did not know). */
+export async function logTermGap(entry: {
   child_id: string;
   question_id: string | null;
-  word: string;
+  term: string;
   chapter: number | null;
   context: string | null;
 }): Promise<void> {
-  if (!supabase) throw new Error("Supabase client not initialized");
-  const { error } = await supabase.from("sejarah_vocab_gaps").insert(entry);
+  if (!supabase) return;
+  const { error } = await supabase.from("science_term_gaps").insert(entry);
   if (error) {
-    throw error;
+    console.error("Error logging term gap:", error);
   }
 }
 
-/** Save a vocabulary gap entry. Queues offline on failure. */
-export async function logVocabGap(entry: {
-  child_id: string;
-  question_id: string | null;
-  word: string;
-  chapter: number | null;
-  context: string | null;
-}): Promise<void> {
-  try {
-    await logVocabGapDirect(entry);
-  } catch (err) {
-    console.error("Vocab gap logging failed, queueing offline:", err);
-    try {
-      const { enqueueSyncItem } = await import("./sync-queue");
-      enqueueSyncItem({
-        type: "vocab_gap",
-        payload: entry,
-      });
-    } catch (queueErr) {
-      console.error("Failed to queue vocab gap sync item:", queueErr);
-    }
-  }
-}
-
-/** Fetch all vocab gaps for a child. */
-export async function fetchVocabGaps(childId: string): Promise<SejarahVocabGap[]> {
+/** Fetch all term gaps for a child. */
+export async function fetchTermGaps(childId: string): Promise<ScienceTermGap[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
-    .from("sejarah_vocab_gaps")
+    .from("science_term_gaps")
     .select("*")
     .eq("child_id", childId)
     .order("created_at", { ascending: false });
   if (error) {
-    console.error("Error fetching vocab gaps:", error);
+    console.error("Error fetching term gaps:", error);
     return [];
   }
-  return (data ?? []) as SejarahVocabGap[];
+  return (data ?? []) as ScienceTermGap[];
 }
 
-/** Toggle reviewed status on a vocab gap. */
-export async function toggleVocabReviewed(
+/** Toggle reviewed status on a term gap. */
+export async function toggleTermReviewed(
   gapId: string,
   reviewed: boolean,
 ): Promise<void> {
   if (!supabase) return;
   const { error } = await supabase
-    .from("sejarah_vocab_gaps")
+    .from("science_term_gaps")
     .update({ reviewed })
     .eq("id", gapId);
   if (error) {
-    console.error("Error toggling vocab reviewed:", error);
+    console.error("Error toggling term reviewed:", error);
   }
 }
-
