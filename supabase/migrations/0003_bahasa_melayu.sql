@@ -1,4 +1,73 @@
 -- ============================================================
+-- Bahasa Melayu module schema (mirrors science_*), with a
+-- `level` axis so questions are served per child:
+--   ilyas   -> 't1'  (KSSR Bahasa Melayu Tahun 1)
+--   hafeeza -> 't4'  (KSSR Bahasa Melayu Tahun 4)
+--   dhiya   -> 'f3'  (KSSM Bahasa Melayu Tingkatan 3 / PT3)
+--
+-- Uses `topic` instead of `chapter` to reflect BM subject
+-- structure: tatabahasa, pemahaman, penulisan, komsas (f3).
+-- ============================================================
+
+create type bm_level as enum ('t1', 't4', 'f3');
+create type bm_qtype as enum ('mcq', 'true_false', 'fill_blank');
+create type bm_difficulty as enum ('easy', 'standard', 'kbat');
+
+create table bm_questions (
+  id              uuid primary key default gen_random_uuid(),
+  level           bm_level not null,
+  topic           int not null,
+  topic_title     text not null,
+  question_text   text not null,
+  question_type   bm_qtype not null default 'mcq',
+  options         text[],
+  correct_answer  text not null,
+  explanation     text,
+  image_url       text,
+  difficulty      bm_difficulty not null default 'standard',
+  tags            text[],
+  created_at      timestamptz not null default now()
+);
+create index bm_questions_level_topic_idx
+  on bm_questions (level, topic);
+
+create table bm_quiz_results (
+  id                uuid primary key default gen_random_uuid(),
+  child_id          text not null,
+  level             bm_level not null,
+  topic             int not null,
+  total_questions   int not null,
+  correct_answers   int not null,
+  duration_sec      int,
+  points_earned     int,
+  vocab_gaps_logged int not null default 0,
+  created_at        timestamptz not null default now()
+);
+create index bm_quiz_results_child_idx
+  on bm_quiz_results (child_id, created_at desc);
+
+create table bm_answer_log (
+  id               uuid primary key default gen_random_uuid(),
+  result_id        uuid not null references bm_quiz_results(id) on delete cascade,
+  question_id      uuid not null references bm_questions(id),
+  given_answer     text not null,
+  is_correct       boolean not null,
+  response_time_ms int,
+  created_at       timestamptz not null default now()
+);
+
+create table bm_vocab_gaps (
+  id           uuid primary key default gen_random_uuid(),
+  child_id     text not null,
+  question_id  uuid references bm_questions(id),
+  word         text not null,
+  topic        int,
+  context      text,
+  reviewed     boolean not null default false,
+  created_at   timestamptz not null default now()
+);
+
+-- ============================================================
 -- SEED: Merged BM module questions per level.
 -- ============================================================
 
