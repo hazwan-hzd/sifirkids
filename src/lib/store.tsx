@@ -67,6 +67,61 @@ function defaultState(): AppState {
   return { version: 1, children, parentPin: "3675", reminderTime: "18:00" };
 }
 
+function sanitizeChildData(c: ChildData): ChildData {
+  let modified = false;
+  const sessions = c.sessions.map((s) => {
+    if (s.id === "66f23b02-bbf1-43d1-ad9a-50e84c8692a8" && s.pointsEarned === 18500) {
+      modified = true;
+      return { ...s, pointsEarned: 185 };
+    }
+    if (s.id === "f8cb8254-63a5-4728-a209-e497a4099943" && s.pointsEarned === 10000) {
+      modified = true;
+      return { ...s, pointsEarned: 100 };
+    }
+    if (s.id === "feeb5e29-1394-4715-9337-b5698ab6e538" && s.pointsEarned === 11000) {
+      modified = true;
+      return { ...s, pointsEarned: 110 };
+    }
+    return s;
+  });
+
+  if (!modified) return c;
+
+  // Re-calculate daily history points for the bugged date: 2026-06-22
+  const daily = { ...c.daily, history: { ...c.daily.history } };
+  const targetDay = "2026-06-22";
+  if (daily.history[targetDay]) {
+    const daySessions = sessions.filter(
+      (s) => s.date.substring(0, 10) === targetDay
+    );
+    const dayPoints = daySessions.reduce((sum, s) => sum + s.pointsEarned, 0);
+    daily.history[targetDay] = {
+      ...daily.history[targetDay],
+      pointsEarned: dayPoints,
+    };
+  }
+
+  // Recompute total earned
+  const totalEarned = sessions.reduce((sum, s) => sum + s.pointsEarned, 0);
+  
+  // Recompute current points = total earned - sum of approved/pending claims cost
+  const claimsCost = c.rewards.claims
+    .filter((cl) => cl.status === "approved" || cl.status === "pending")
+    .reduce((sum, cl) => sum + cl.cost, 0);
+  const points = Math.max(0, totalEarned - claimsCost);
+
+  return {
+    ...c,
+    sessions,
+    daily,
+    rewards: {
+      ...c.rewards,
+      points,
+      totalEarned,
+    },
+  };
+}
+
 /** Merge persisted state onto defaults so new fields never crash old saves. */
 function reconcile(raw: unknown): AppState {
   const base = defaultState();
@@ -77,7 +132,7 @@ function reconcile(raw: unknown): AppState {
     for (const p of PROFILES) {
       const sc = saved.children[p.id];
       if (sc) {
-        merged.children[p.id] = {
+        merged.children[p.id] = sanitizeChildData({
           ...defaultChild(p),
           ...sc,
           profile: p, // profile is source-of-truth from code
@@ -87,7 +142,7 @@ function reconcile(raw: unknown): AppState {
           multiplication: { ...sc.multiplication },
           arabic: { ...sc.arabic },
           sessions: sc.sessions ?? [],
-        };
+        });
       }
     }
   }
@@ -272,7 +327,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        next.children[p.id] = {
+        next.children[p.id] = sanitizeChildData({
           ...local,
           sessions,
           multiplication: mergeBucket(local.multiplication, remote.multiplication, false),
@@ -292,7 +347,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...local.rewards,
             totalEarned: Math.max(local.rewards.totalEarned, remote.rewards.totalEarned),
           },
-        };
+        });
       }
       return next;
     });
