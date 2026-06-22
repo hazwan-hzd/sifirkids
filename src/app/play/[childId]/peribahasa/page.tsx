@@ -182,19 +182,19 @@ export default function PeribahasaPage({
       const totalDurationSec = Math.round(
         (Date.now() - quizStartRef.current) / 1000,
       );
-      const pointsEarned =
-        correctCount * POINTS.perCorrect +
-        (correctCount === questions.length ? questions.length * POINTS.perfectBonusPerQuestion : 0);
+      const bestStreak = calcBestStreak(answers);
 
       // Record to the SifirKids points economy
-      recordQuiz({
+      const outcome = recordQuiz({
         module: "peribahasa",
         topic: `tingkatan-${activeTingkatan}`,
         total: questions.length,
         correct: correctCount,
         durationSec: totalDurationSec,
-        bestStreak: calcBestStreak(answers),
+        bestStreak: bestStreak,
       });
+
+      const pointsEarned = outcome.pointsEarned;
 
       // Save to Supabase peribahasa tables
       logPeribahasaQuiz(

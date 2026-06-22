@@ -386,7 +386,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const recordQuizLocal = useCallback(
     (childId: ChildId, input: QuizResultInput): QuizOutcome => {
-      const basePoints = computePoints(input.correct, input.total, input.bestStreak);
+      let basePoints = computePoints(input.correct, input.total, input.bestStreak);
+      if (input.module === "bahasa_melayu") {
+        basePoints *= 2;
+      }
       const perfect = input.total > 0 && input.correct === input.total;
       const masteredNow: string[] = [];
       const today = dayKey();

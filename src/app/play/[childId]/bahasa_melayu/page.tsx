@@ -200,17 +200,19 @@ export default function BahasaMelayuPage({
       // Quiz complete - calculate and save
       const correctCount = answers.filter((a) => a.is_correct).length;
       const totalDurationSec = Math.round((Date.now() - quizStartRef.current) / 1000);
-      const pointsEarned = correctCount * POINTS.perCorrect + (correctCount === questions.length ? questions.length * POINTS.perfectBonusPerQuestion : 0);
+      const bestStreak = calcBestStreak(answers);
 
       // Record to the SifirKids points economy
-      recordQuiz({
+      const outcome = recordQuiz({
         module: "bahasa_melayu",
         topic: `topik-${activeTopic}`,
         total: questions.length,
         correct: correctCount,
         durationSec: totalDurationSec,
-        bestStreak: calcBestStreak(answers),
+        bestStreak: bestStreak,
       });
+
+      const pointsEarned = outcome.pointsEarned;
 
       // Save to Supabase BM tables
       logBMQuiz(
