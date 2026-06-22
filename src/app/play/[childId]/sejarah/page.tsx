@@ -600,18 +600,18 @@ export default function SejarahPage({
                   onClick={() => setShowHintConfirm(true)}
                   className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border border-sunny-200 bg-sunny-50 text-sunny-700 hover:bg-sunny-100 font-display text-sm font-semibold transition-all shadow-sm"
                 >
-                  💡 Give me a Hint (-1000 mata)
+                  💡 Give me a Hint (-10 mata)
                 </button>
               ) : (
                 <div className="rounded-xl border border-sunny-300 bg-sunny-50 p-4 animate-slide">
                   <p className="text-sm font-semibold text-sunny-800 mb-3 text-center">
-                    Gunakan 1000 mata ganjaran untuk melihat pembayang?
+                    Gunakan 10 mata ganjaran untuk melihat pembayang?
                   </p>
                   <div className="flex gap-2 justify-center">
                     <button
                       type="button"
                       onClick={() => {
-                        deductPoints(1000);
+                        deductPoints(10);
                         setUsedHint(true);
                         setShowHintConfirm(false);
                       }}

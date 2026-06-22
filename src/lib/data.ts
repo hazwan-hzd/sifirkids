@@ -84,15 +84,15 @@ export function getLetter(id: string): ArabicLetter | undefined {
 /* ------------------------------------------------------------------ */
 
 export const POINTS = {
-  perCorrect: 1000,
+  perCorrect: 10,
   /** added per question when the whole quiz is perfect */
-  perfectBonusPerQuestion: 500,
+  perfectBonusPerQuestion: 5,
   /** added once per quiz for keeping a long streak */
-  streakBonus: 2000,
+  streakBonus: 20,
   /** streak length that unlocks streakBonus */
   streakBonusAt: 5,
   /** bonus for keeping the daily streak alive */
-  dailyStreakBonus: 1500,
+  dailyStreakBonus: 15,
 };
 
 /** Mastery: at least this many attempts AND accuracy at/above threshold. */
