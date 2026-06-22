@@ -5,6 +5,7 @@ import { PROFILES, COLOR_CLASSES } from "@/lib/data";
 import { useApp } from "@/lib/store";
 import { PageShell, Loading, PointsBadge } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { AvatarRenderer } from "@/components/AvatarRenderer";
 
 export default function HomePage() {
   const { state, hydrated } = useApp();
@@ -36,14 +37,18 @@ export default function HomePage() {
                 )}
                 style={{ animationDelay: `${i * 80}ms` }}
               >
-                <span
-                  className={cn(
-                    "flex h-24 w-24 items-center justify-center rounded-full text-5xl shadow-[var(--shadow-pop)]",
-                    c.bg,
-                  )}
-                >
-                  {p.avatar}
-                </span>
+                {child.avatar ? (
+                  <AvatarRenderer avatar={child.avatar} size={96} className="shadow-[var(--shadow-pop)]" />
+                ) : (
+                  <span
+                    className={cn(
+                      "flex h-24 w-24 items-center justify-center rounded-full text-5xl shadow-[var(--shadow-pop)]",
+                      c.bg,
+                    )}
+                  >
+                    {p.avatar}
+                  </span>
+                )}
                 <span className={cn("font-display text-2xl font-bold", c.text)}>{p.name}</span>
                 <PointsBadge points={child.rewards.points} />
                 {child.daily.currentStreak > 0 && (

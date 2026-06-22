@@ -21,6 +21,7 @@ import {
   Confetti,
 } from "@/components/ui";
 import { cn, dayKey } from "@/lib/utils";
+import { AvatarRenderer } from "@/components/AvatarRenderer";
 
 const STATUS_STYLES: Record<
   "pending" | "approved" | "denied",
@@ -114,7 +115,11 @@ export default function RewardsPage({
       <div className="mb-6 flex items-center justify-between gap-3">
         <BackButton href={`/play/${id}`} />
         <div className="flex items-center gap-2 font-display text-xl font-bold">
-          <span className="text-3xl">{child.profile.avatar}</span>
+          {child.avatar ? (
+            <AvatarRenderer avatar={child.avatar} size={36} className="rounded-full shadow-sm ring-2 ring-black/5" />
+          ) : (
+            <span className="text-3xl">{child.profile.avatar}</span>
+          )}
           <span className={c.text}>{child.profile.name}</span>
         </div>
         <PointsBadge points={points} />

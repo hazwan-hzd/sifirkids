@@ -10,6 +10,7 @@ import {
   PointsBadge,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { AvatarRenderer } from "@/components/AvatarRenderer";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -76,9 +77,13 @@ export default function ScoreboardPage() {
               <span className="w-10 text-center text-4xl" aria-hidden>
                 {MEDALS[i] ?? "⭐"}
               </span>
-              <span className="text-4xl" aria-hidden>
-                {k.child.profile.avatar}
-              </span>
+              {k.child.avatar ? (
+                <AvatarRenderer avatar={k.child.avatar} size={42} className="rounded-full shadow-sm ring-2 ring-black/5" />
+              ) : (
+                <span className="text-4xl" aria-hidden>
+                  {k.child.profile.avatar}
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <p className={cn("font-display text-2xl font-bold", c.text)}>
                   {k.child.profile.name}
@@ -110,9 +115,13 @@ export default function ScoreboardPage() {
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="mb-4 flex items-center gap-3">
-                <span className="text-4xl" aria-hidden>
-                  {k.child.profile.avatar}
-                </span>
+                {k.child.avatar ? (
+                  <AvatarRenderer avatar={k.child.avatar} size={42} className="rounded-full shadow-sm ring-2 ring-black/5" />
+                ) : (
+                  <span className="text-4xl" aria-hidden>
+                    {k.child.profile.avatar}
+                  </span>
+                )}
                 <p className={cn("font-display text-2xl font-bold", c.text)}>
                   {k.child.profile.name}
                 </p>

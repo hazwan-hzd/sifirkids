@@ -100,6 +100,17 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     children: "all",
     animationDelay: 400,
   },
+  {
+    id: "pafa_kafa",
+    label: "Fardu Ain (PAFA/KAFA)",
+    emoji: "🕌",
+    accent: "grape",
+    description: "Kuiz Perkara Asas Fardu Ain & Kurikulum KAFA",
+    status: "active",
+    parentOnly: false,
+    children: "all",
+    animationDelay: 480,
+  },
 ];
 
 /** Get modules visible to a specific child, respecting status. */

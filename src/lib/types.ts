@@ -3,7 +3,7 @@
 
 export type ChildId = "hafeeza" | "dhiya" | "ilyas";
 
-export type ModuleId = "multiplication" | "arabic" | "sejarah" | "peribahasa" | "science" | "bahasa_melayu";
+export type ModuleId = "multiplication" | "arabic" | "sejarah" | "peribahasa" | "science" | "bahasa_melayu" | "pafa_kafa";
 
 export type QuizMode = "random" | "standard";
 
@@ -112,6 +112,41 @@ export interface ChildData {
   sessions: QuizSession[];
   /** custom avatar configuration */
   avatar?: ChildAvatar;
+  /** TCG collection, buddy and deck state */
+  tcg?: ChildTCG;
+}
+
+export interface Card {
+  id: string;
+  name: string;
+  emoji: string;
+  type: "fire" | "water" | "grass" | "lightning" | "strawhat" | "marine" | "shadow" | "legendary";
+  rarity: "common" | "uncommon" | "rare" | "ultra_rare" | "secret_gold";
+  hp: number;
+  attackName: string;
+  attackDmg: number;
+  ability?: string;
+  description: string;
+  evolvesFrom?: string;
+  set: "starter" | "monsters" | "crews" | "promo";
+}
+
+export interface ChildTCG {
+  /** cardId -> quantity */
+  collection: Record<string, number>;
+  activeBuddyId: string | null;
+  activeDeck: string[]; // list of card IDs (max 5)
+  openedPacksCount: number;
+}
+
+export interface TradeRequest {
+  id: string;
+  fromChildId: string;
+  toChildId: string;
+  offeredCardId: string;
+  requestedCardId: string;
+  status: "pending" | "approved" | "denied";
+  date: string;
 }
 
 export interface ChildAvatar {
@@ -138,4 +173,7 @@ export interface AppState {
   parentPin: string;
   /** reminder time HH:MM, local */
   reminderTime: string;
+  /** global trade requests queue */
+  pendingTrades?: TradeRequest[];
 }
+

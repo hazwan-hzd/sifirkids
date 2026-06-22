@@ -10,6 +10,7 @@ import { PageShell, Loading, PointsBadge, BackButton, ProgressBar } from "@/comp
 import { LockedModuleCard } from "@/components/LockedModuleCard";
 import { getModulesForChild } from "@/lib/moduleRegistry";
 import { cn } from "@/lib/utils";
+import { AvatarRenderer } from "@/components/AvatarRenderer";
 
 export default function ChildHubPage({
   params,
@@ -51,7 +52,11 @@ export default function ChildHubPage({
       <div className="mb-6 flex items-center justify-between gap-3">
         <BackButton href="/" />
         <div className="flex items-center gap-2 font-display text-xl font-bold">
-          <span className="text-3xl">{child.profile.avatar}</span>
+          {child.avatar ? (
+            <AvatarRenderer avatar={child.avatar} size={36} className="rounded-full shadow-sm ring-2 ring-black/5" />
+          ) : (
+            <span className="text-3xl">{child.profile.avatar}</span>
+          )}
           <span className={c.text}>{child.profile.name}</span>
         </div>
         <PointsBadge points={child.rewards.points} />
@@ -147,26 +152,34 @@ export default function ChildHubPage({
           ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-3">
+      <div className="mt-6 grid grid-cols-4 gap-2">
         <Link
           href={`/play/${id}/rewards`}
           role="button"
-          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-sunny-100 p-4 text-center"
+          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-sunny-100 p-3 text-center"
         >
-          <span className="text-3xl">🎁</span>
-          <span className="font-display font-semibold text-sunny-600">Rewards</span>
+          <span className="text-2xl">🎁</span>
+          <span className="font-display text-xs font-semibold text-sunny-600">Rewards</span>
+        </Link>
+        <Link
+          href={`/play/${id}/avatar`}
+          role="button"
+          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-coral-100 p-3 text-center"
+        >
+          <span className="text-2xl">👕</span>
+          <span className="font-display text-xs font-semibold text-coral-600">Avatar</span>
         </Link>
         <Link
           href="/scoreboard"
           role="button"
-          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-grape-100 p-4 text-center"
+          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-grape-100 p-3 text-center"
         >
-          <span className="text-3xl">🏆</span>
-          <span className="font-display font-semibold text-grape-600">Scores</span>
+          <span className="text-2xl">🏆</span>
+          <span className="font-display text-xs font-semibold text-grape-600">Scores</span>
         </Link>
-        <div className="flex flex-col items-center gap-1 rounded-3xl bg-white/70 p-4 text-center">
-          <span className="text-3xl">🔥</span>
-          <span className="font-display font-semibold text-ink/80">
+        <div className="flex flex-col items-center gap-1 rounded-3xl bg-white/70 p-3 text-center">
+          <span className="text-2xl">🔥</span>
+          <span className="font-display text-xs font-semibold text-ink/80">
             {child.daily.currentStreak} day{child.daily.currentStreak === 1 ? "" : "s"}
           </span>
         </div>

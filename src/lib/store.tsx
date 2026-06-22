@@ -79,13 +79,19 @@ function defaultChild(profile: Profile): ChildData {
     metrics: { totalOpens: 0, lastOpen: null, totalTimeSec: 0 },
     sessions: [],
     avatar: defaultAvatar(),
+    tcg: {
+      collection: {},
+      activeBuddyId: null,
+      activeDeck: [],
+      openedPacksCount: 0,
+    },
   };
 }
 
 function defaultState(): AppState {
   const children = {} as Record<ChildId, ChildData>;
   for (const p of PROFILES) children[p.id] = defaultChild(p);
-  return { version: 1, children, parentPin: "3675", reminderTime: "18:00" };
+  return { version: 1, children, parentPin: "3675", reminderTime: "18:00", pendingTrades: [] };
 }
 
 function reconcileChildPoints(c: ChildData): ChildData {
@@ -138,6 +144,12 @@ function reconcileChildPoints(c: ChildData): ChildData {
       points,
       totalEarned,
     },
+    tcg: c.tcg ?? {
+      collection: {},
+      activeBuddyId: null,
+      activeDeck: [],
+      openedPacksCount: 0,
+    },
   };
 }
 
@@ -146,7 +158,7 @@ function reconcile(raw: unknown): AppState {
   const base = defaultState();
   if (!raw || typeof raw !== "object") return base;
   const saved = raw as Partial<AppState>;
-  const merged = { ...base, ...saved, children: { ...base.children } };
+  const merged = { ...base, ...saved, children: { ...base.children }, pendingTrades: saved.pendingTrades ?? [] };
   if (saved.children) {
     for (const p of PROFILES) {
       const sc = saved.children[p.id];
@@ -162,6 +174,7 @@ function reconcile(raw: unknown): AppState {
           arabic: { ...sc.arabic },
           sessions: sc.sessions ?? [],
           avatar: sc.avatar ?? defaultAvatar(),
+          tcg: sc.tcg ?? defaultChild(p).tcg,
         });
       }
     }

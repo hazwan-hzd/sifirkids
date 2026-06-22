@@ -2,6 +2,7 @@ import { supabase, logQuizToSupabaseDirect } from "./supabase";
 import { logSejarahQuizDirect, logVocabGapDirect } from "./sejarah";
 import { logPeribahasaQuizDirect } from "./peribahasa";
 import { logBMQuizDirect, logVocabGapDirect as logBMVocabGapDirect } from "./bahasamelayu";
+import { logPafaKafaQuizDirect, logTermGapDirect } from "./pafakafa";
 
 export type QueueItem =
   | {
@@ -104,6 +105,37 @@ export type QueueItem =
         topic: number | null;
         context: string | null;
       };
+    }
+  | {
+      type: "pafa_kafa";
+      payload: {
+        result: {
+          child_id: string;
+          level: "t1" | "t4" | "f3";
+          chapter: number;
+          total_questions: number;
+          correct_answers: number;
+          duration_sec: number;
+          points_earned: number;
+          term_gaps_logged: number;
+        };
+        answers: Array<{
+          question_id: string;
+          given_answer: string;
+          is_correct: boolean;
+          response_time_ms: number;
+        }>;
+      };
+    }
+  | {
+      type: "pafakafa_term_gap";
+      payload: {
+        child_id: string;
+        question_id: string | null;
+        term: string;
+        chapter: number | null;
+        context: string | null;
+      };
     };
 
 const QUEUE_KEY = "sifirkids:sync_queue";
@@ -191,6 +223,10 @@ export async function flushSyncQueue(): Promise<void> {
         await logBMQuizDirect(item.payload.result as Parameters<typeof logBMQuizDirect>[0], item.payload.answers);
       } else if (item.type === "bm_vocab_gap") {
         await logBMVocabGapDirect(item.payload);
+      } else if (item.type === "pafa_kafa") {
+        await logPafaKafaQuizDirect(item.payload.result, item.payload.answers);
+      } else if (item.type === "pafakafa_term_gap") {
+        await logTermGapDirect(item.payload);
       }
       console.log(`Synced item of type: ${item.type} successfully.`);
     } catch (err) {
