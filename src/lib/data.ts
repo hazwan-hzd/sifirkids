@@ -122,8 +122,41 @@ export const REWARDS: Reward[] = [
   { id: "outing", name: "Day Outing", icon: "🎡", cost: 200000 },
 ];
 
+export const CHILD_REWARDS: Record<ChildId, Reward[]> = {
+  ilyas: [
+    { id: "ilyas_roblox_sticker", name: "Roblox Avatar Sticker Pack", icon: "🎟️", cost: 5000 },
+    { id: "ilyas_football_kickabout", name: "Extra Football Practice", icon: "⚽", cost: 15000 },
+    { id: "ilyas_robux_starter", name: "Roblox Starter Pack (400 Robux)", icon: "🪙", cost: 40000 },
+    { id: "ilyas_football_socks", name: "Pro Football Grip Socks", icon: "🧦", cost: 75000 },
+    { id: "ilyas_robux_mega", name: "Roblox Mega Pack (800 Robux)", icon: "💎", cost: 100000 },
+    { id: "ilyas_football_jersey", name: "Custom Football Jersey", icon: "👕", cost: 250000 },
+  ],
+  dhiya: [
+    { id: "dhiya_kawaii_stickers", name: "Kawaii Pink Unicorn Sticker Sheet", icon: "🦄", cost: 5000 },
+    { id: "dhiya_pink_hairclip", name: "Pink Unicorn Hair Clip", icon: "🎀", cost: 15000 },
+    { id: "dhiya_mlp_mystery_mini", name: "My Little Pony Mystery Mini Figure", icon: "🐴", cost: 35000 },
+    { id: "dhiya_kawaii_skirt", name: "Pink Kawaii Tulle Skirt", icon: "👗", cost: 80000 },
+    { id: "dhiya_mlp_plushie", name: "Jumbo Pinkie Pie Unicorn Plushie", icon: "🧸", cost: 120000 },
+    { id: "dhiya_kawaii_room_makeover", name: "Kawaii Pink Unicorn Bedroom Set", icon: "🛏️", cost: 220000 },
+  ],
+  hafeeza: [
+    { id: "hafeeza_kpop_photocard", name: "K-Pop Mystery Photocard Pack", icon: "📸", cost: 6000 },
+    { id: "hafeeza_anime_keychain", name: "Chibi Gojo Acrylic Keychain", icon: "🔑", cost: 18000 },
+    { id: "hafeeza_bakugo_poster", name: "Bakugo Katsuki Wall Poster", icon: "🖼️", cost: 30000 },
+    { id: "hafeeza_gojo_blindfold", name: "Gojo Satoru Sleep Eye Mask", icon: "👁️", cost: 60000 },
+    { id: "hafeeza_kpop_album", name: "K-Pop Music Album of Choice", icon: "💿", cost: 120000 },
+    { id: "hafeeza_bakugo_figure", name: "My Hero Academia Bakugo Figure", icon: "🦸", cost: 250000 },
+  ],
+};
+
 export function getReward(id: string): Reward | undefined {
-  return REWARDS.find((r) => r.id === id);
+  const def = REWARDS.find((r) => r.id === id);
+  if (def) return def;
+  for (const list of Object.values(CHILD_REWARDS)) {
+    const item = list.find((r) => r.id === id);
+    if (item) return item;
+  }
+  return undefined;
 }
 
 /** Palette tokens per color family — used so components avoid hardcoding hex. */

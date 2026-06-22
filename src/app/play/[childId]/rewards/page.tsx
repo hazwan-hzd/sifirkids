@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import {
   CHILD_IDS,
   COLOR_CLASSES,
+  CHILD_REWARDS,
   REWARDS,
 } from "@/lib/data";
 import type { ChildId } from "@/lib/types";
@@ -56,10 +57,10 @@ export default function RewardsPage({
   }
 
   // Sorted shop (cheapest first) — declared before any early return for stable hooks.
-  const sortedRewards = useMemo(
-    () => [...REWARDS].sort((a, b) => a.cost - b.cost),
-    [],
-  );
+  const sortedRewards = useMemo(() => {
+    const list = CHILD_REWARDS[id] || REWARDS;
+    return [...list].sort((a, b) => a.cost - b.cost);
+  }, [id]);
 
   if (!hydrated) {
     return (
