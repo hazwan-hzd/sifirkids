@@ -15,6 +15,7 @@ import { TopicPieChart, type PieDatum } from "./TopicPieChart";
 import { TimeChart, type TimeDatum } from "./TimeChart";
 import { MultiplicationGrid, ArabicGrid } from "./MasteryGrid";
 import { RewardApprovals } from "./RewardApprovals";
+import { TradeApprovals } from "./TradeApprovals";
 import { Settings } from "./Settings";
 import { formatDuration, formatLastOpen, lastNDays, dayLabel } from "./format";
 import {
@@ -465,6 +466,7 @@ export default function ParentPage() {
 
           {/* Cross-child controls */}
           <RewardApprovals />
+          <TradeApprovals />
           <Settings />
         </div>
       )}

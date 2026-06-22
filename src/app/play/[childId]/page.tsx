@@ -152,14 +152,22 @@ export default function ChildHubPage({
           ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-4 gap-2">
+      <div className="mt-6 grid grid-cols-5 gap-1.5">
+        <Link
+          href={`/play/${id}/tcg`}
+          role="button"
+          className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-sky-100 p-3 text-center"
+        >
+          <span className="text-2xl">🃏</span>
+          <span className="font-display text-[10px] font-bold text-sky-600">SifirDex</span>
+        </Link>
         <Link
           href={`/play/${id}/rewards`}
           role="button"
           className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-sunny-100 p-3 text-center"
         >
           <span className="text-2xl">🎁</span>
-          <span className="font-display text-xs font-semibold text-sunny-600">Rewards</span>
+          <span className="font-display text-[10px] font-bold text-sunny-600">Rewards</span>
         </Link>
         <Link
           href={`/play/${id}/avatar`}
@@ -167,7 +175,7 @@ export default function ChildHubPage({
           className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-coral-100 p-3 text-center"
         >
           <span className="text-2xl">👕</span>
-          <span className="font-display text-xs font-semibold text-coral-600">Avatar</span>
+          <span className="font-display text-[10px] font-bold text-coral-600">Avatar</span>
         </Link>
         <Link
           href="/scoreboard"
@@ -175,11 +183,11 @@ export default function ChildHubPage({
           className="btn-pop tap flex flex-col items-center gap-1 rounded-3xl bg-grape-100 p-3 text-center"
         >
           <span className="text-2xl">🏆</span>
-          <span className="font-display text-xs font-semibold text-grape-600">Scores</span>
+          <span className="font-display text-[10px] font-bold text-grape-600">Scores</span>
         </Link>
         <div className="flex flex-col items-center gap-1 rounded-3xl bg-white/70 p-3 text-center">
           <span className="text-2xl">🔥</span>
-          <span className="font-display text-xs font-semibold text-ink/80">
+          <span className="font-display text-[10px] font-bold text-ink/80">
             {child.daily.currentStreak} day{child.daily.currentStreak === 1 ? "" : "s"}
           </span>
         </div>

@@ -18,6 +18,7 @@ import {
 } from "react";
 import type {
   AppState,
+  Card,
   ChildAvatar,
   ChildData,
   ChildId,
@@ -26,6 +27,7 @@ import type {
   QuizMode,
   QuizSession,
   TopicStat,
+  TradeRequest,
 } from "./types";
 import { emptyTopicStat } from "./types";
 import {
@@ -34,6 +36,8 @@ import {
   POINTS,
   PROFILES,
   getReward,
+  CARDS,
+  PACKS,
 } from "./data";
 import { dayKey, daysBetween, uid } from "./utils";
 import { supabase, logQuizToSupabase } from "./supabase";
@@ -263,6 +267,11 @@ interface AppContextValue {
   resetChild: (childId: ChildId) => void;
   saveAvatar: (childId: ChildId, look: ChildAvatar) => void;
   unlockAvatarItem: (childId: ChildId, itemId: string, cost: number) => boolean;
+  buyBoosterPack: (childId: ChildId, packId: string) => Card[] | null;
+  setTcgBuddy: (childId: ChildId, cardId: string | null) => void;
+  setTcgDeck: (childId: ChildId, cardIds: string[]) => void;
+  createTradeRequest: (fromChildId: ChildId, toChildId: ChildId, offeredCardId: string, requestedCardId: string) => void;
+  resolveTradeRequest: (tradeId: string, approve: boolean) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -388,12 +397,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [hydrated, sbData]);
 
-  // Supabase settings sync: fetch PIN + reminder time from cloud
+  // Supabase settings sync: fetch PIN + reminder time + child profiles from cloud
   const settingsSyncDone = useRef(false);
   useEffect(() => {
     if (!hydrated || settingsSyncDone.current) return;
     settingsSyncDone.current = true;
     if (!supabase) return;
+    
+    // Fetch Settings
     supabase
       .from("app_settings")
       .select("parent_pin, reminder_time")
@@ -406,6 +417,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             parentPin: row.parent_pin ?? s.parentPin,
             reminderTime: row.reminder_time ?? s.reminderTime,
           }));
+        }
+      });
+
+    // Fetch Child Profiles (Avatar + TCG collection)
+    supabase
+      .from("child_profiles")
+      .select("id, avatar, tcg")
+      .then(({ data }) => {
+        if (data) {
+          setState((prev) => {
+            const next = { ...prev, children: { ...prev.children } };
+            for (const row of data) {
+              const cid = row.id as ChildId;
+              if (next.children[cid]) {
+                next.children[cid] = {
+                  ...next.children[cid],
+                  avatar: row.avatar ?? next.children[cid].avatar,
+                  tcg: row.tcg ?? next.children[cid].tcg,
+                };
+              }
+            }
+            return next;
+          });
         }
       });
   }, [hydrated]);
@@ -539,6 +573,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
         const sessions = [...next.sessions, session].slice(-MAX_SESSIONS);
 
+        const tcg = next.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0 };
+        const newCollection = { ...tcg.collection };
+        if (masteredNow.length > 0) {
+          const promoPool = CARDS.filter((card) => card.set === "promo");
+          if (promoPool.length > 0) {
+            for (let i = 0; i < masteredNow.length; i++) {
+              const randomPromo = promoPool[Math.floor(Math.random() * promoPool.length)];
+              newCollection[randomPromo.id] = (newCollection[randomPromo.id] ?? 0) + 1;
+            }
+          }
+        }
+
         next = {
           ...next,
           daily,
@@ -549,6 +595,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             totalEarned: next.rewards.totalEarned + totalPts,
           },
           metrics: { ...next.metrics, totalTimeSec: next.metrics.totalTimeSec + input.durationSec },
+          tcg: {
+            ...tcg,
+            collection: newCollection,
+          },
         };
         return next;
       });
@@ -647,6 +697,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ...c,
         avatar: look,
       }));
+      // Sync to Supabase
+      if (supabase) {
+        supabase
+          .from("child_profiles")
+          .upsert({ id: childId, avatar: look, updated_at: new Date().toISOString() })
+          .then();
+      }
     },
     [updateChild],
   );
@@ -661,16 +718,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           return c;
         }
         ok = true;
+        const updatedAvatar = {
+          ...currentAvatar,
+          unlockedItems: [...currentAvatar.unlockedItems, itemId],
+        };
+        // Sync to Supabase
+        if (supabase) {
+          supabase
+            .from("child_profiles")
+            .upsert({ id: childId, avatar: updatedAvatar, updated_at: new Date().toISOString() })
+            .then();
+        }
         return {
           ...c,
           rewards: {
             ...c.rewards,
             points: points - cost,
           },
-          avatar: {
-            ...currentAvatar,
-            unlockedItems: [...currentAvatar.unlockedItems, itemId],
-          },
+          avatar: updatedAvatar,
         };
       });
       return ok;
@@ -738,6 +803,213 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateChild],
   );
 
+  const buyBoosterPack = useCallback(
+    (childId: ChildId, packId: string): Card[] | null => {
+      const pack = PACKS.find((p) => p.id === packId);
+      if (!pack) return null;
+
+      let pulledCards: Card[] = [];
+
+      updateChild(childId, (c) => {
+        if (c.rewards.points < pack.cost) return c;
+
+        // Determine candidate cards for this pack
+        const candidates = CARDS.filter((card) => pack.allowedSets.includes(card.set));
+        if (candidates.length === 0) return c;
+
+        // Pull random cards based on weights
+        const drawCard = (): Card => {
+          const rand = Math.random() * 100;
+          const w = pack.rarityWeights;
+
+          let targetRarity: Card["rarity"] = "common";
+          if (rand < w.secret_gold) {
+            targetRarity = "secret_gold";
+          } else if (rand < w.secret_gold + w.ultra_rare) {
+            targetRarity = "ultra_rare";
+          } else if (rand < w.secret_gold + w.ultra_rare + w.rare) {
+            targetRarity = "rare";
+          } else if (rand < w.secret_gold + w.ultra_rare + w.rare + w.uncommon) {
+            targetRarity = "uncommon";
+          } else {
+            targetRarity = "common";
+          }
+
+          let pool = candidates.filter((card) => card.rarity === targetRarity);
+          if (pool.length === 0) {
+            pool = candidates.filter((card) => card.rarity === "common");
+          }
+          if (pool.length === 0) {
+            pool = candidates; // absolute fallback
+          }
+          return pool[Math.floor(Math.random() * pool.length)];
+        };
+
+        pulledCards = Array.from({ length: pack.cardCount }, () => drawCard());
+
+        const tcg = c.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0 };
+        const newCollection = { ...tcg.collection };
+        for (const card of pulledCards) {
+          newCollection[card.id] = (newCollection[card.id] ?? 0) + 1;
+        }
+
+        const nextTcg = {
+          ...tcg,
+          collection: newCollection,
+          openedPacksCount: tcg.openedPacksCount + 1,
+        };
+
+        // Sync to Supabase
+        if (supabase) {
+          supabase
+            .from("child_profiles")
+            .upsert({ id: childId, tcg: nextTcg, updated_at: new Date().toISOString() })
+            .then();
+        }
+
+        return {
+          ...c,
+          rewards: {
+            ...c.rewards,
+            points: c.rewards.points - pack.cost,
+          },
+          tcg: nextTcg,
+        };
+      });
+
+      return pulledCards.length > 0 ? pulledCards : null;
+    },
+    [updateChild],
+  );
+
+  const setTcgBuddy = useCallback(
+    (childId: ChildId, cardId: string | null) => {
+      updateChild(childId, (c) => {
+        const tcg = c.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0 };
+        const nextTcg = {
+          ...tcg,
+          activeBuddyId: cardId,
+        };
+        // Sync to Supabase
+        if (supabase) {
+          supabase
+            .from("child_profiles")
+            .upsert({ id: childId, tcg: nextTcg, updated_at: new Date().toISOString() })
+            .then();
+        }
+        return {
+          ...c,
+          tcg: nextTcg,
+        };
+      });
+    },
+    [updateChild],
+  );
+
+  const setTcgDeck = useCallback(
+    (childId: ChildId, cardIds: string[]) => {
+      updateChild(childId, (c) => {
+        const tcg = c.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0 };
+        const nextTcg = {
+          ...tcg,
+          activeDeck: cardIds.slice(0, 5), // limit to max 5 cards
+        };
+        // Sync to Supabase
+        if (supabase) {
+          supabase
+            .from("child_profiles")
+            .upsert({ id: childId, tcg: nextTcg, updated_at: new Date().toISOString() })
+            .then();
+        }
+        return {
+          ...c,
+          tcg: nextTcg,
+        };
+      });
+    },
+    [updateChild],
+  );
+
+  const createTradeRequest = useCallback(
+    (fromChildId: ChildId, toChildId: ChildId, offeredCardId: string, requestedCardId: string) => {
+      const trade: TradeRequest = {
+        id: uid(),
+        fromChildId,
+        toChildId,
+        offeredCardId,
+        requestedCardId,
+        status: "pending",
+        date: new Date().toISOString(),
+      };
+      setState((prev) => ({
+        ...prev,
+        pendingTrades: [...(prev.pendingTrades ?? []), trade],
+      }));
+    },
+    [],
+  );
+
+  const resolveTradeRequest = useCallback(
+    (tradeId: string, approve: boolean) => {
+      setState((prev) => {
+        const trades = prev.pendingTrades ?? [];
+        const trade = trades.find((t) => t.id === tradeId);
+        if (!trade || trade.status !== "pending") return prev;
+
+        const nextTrades = trades.map((t) =>
+          t.id === tradeId ? { ...t, status: (approve ? "approved" : "denied") as "approved" | "denied" } : t
+        );
+
+        if (!approve) {
+          return { ...prev, pendingTrades: nextTrades };
+        }
+
+        // Apply card exchange if approved
+        const nextChildren = { ...prev.children };
+        const sender = nextChildren[trade.fromChildId as ChildId];
+        const receiver = nextChildren[trade.toChildId as ChildId];
+
+        if (sender && receiver) {
+          const senderTcg = sender.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0 };
+          const receiverTcg = receiver.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0 };
+
+          // check if sender has offered card and receiver has requested card
+          const senderHasOffer = (senderTcg.collection[trade.offeredCardId] ?? 0) > 0;
+          const receiverHasReq = (receiverTcg.collection[trade.requestedCardId] ?? 0) > 0;
+
+          if (senderHasOffer && receiverHasReq) {
+            const nextSenderColl = { ...senderTcg.collection };
+            const nextReceiverColl = { ...receiverTcg.collection };
+
+            // deduct cards
+            nextSenderColl[trade.offeredCardId] = Math.max(0, (nextSenderColl[trade.offeredCardId] ?? 1) - 1);
+            nextReceiverColl[trade.requestedCardId] = Math.max(0, (nextReceiverColl[trade.requestedCardId] ?? 1) - 1);
+
+            // add cards
+            nextSenderColl[trade.requestedCardId] = (nextSenderColl[trade.requestedCardId] ?? 0) + 1;
+            nextReceiverColl[trade.offeredCardId] = (nextReceiverColl[trade.offeredCardId] ?? 0) + 1;
+
+            nextChildren[trade.fromChildId as ChildId] = {
+              ...sender,
+              tcg: { ...senderTcg, collection: nextSenderColl },
+            };
+            nextChildren[trade.toChildId as ChildId] = {
+              ...receiver,
+              tcg: { ...receiverTcg, collection: nextReceiverColl },
+            };
+          }
+        }
+
+        return {
+          ...prev,
+          children: nextChildren,
+          pendingTrades: nextTrades,
+        };
+      });
+    },
+    [],
+  );
+
   const value = useMemo<AppContextValue>(
     () => ({
       state,
@@ -754,6 +1026,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       resetChild,
       saveAvatar,
       unlockAvatarItem,
+      buyBoosterPack,
+      setTcgBuddy,
+      setTcgDeck,
+      createTradeRequest,
+      resolveTradeRequest,
     }),
     [
       state,
@@ -770,6 +1047,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       resetChild,
       saveAvatar,
       unlockAvatarItem,
+      buyBoosterPack,
+      setTcgBuddy,
+      setTcgDeck,
+      createTradeRequest,
+      resolveTradeRequest,
     ],
   );
 
@@ -797,6 +1079,11 @@ export function useChild(childId: ChildId) {
     setDailyGoal: (g: number) => app.setDailyGoal(childId, g),
     saveAvatar: (look: ChildAvatar) => app.saveAvatar(childId, look),
     unlockAvatarItem: (itemId: string, cost: number) => app.unlockAvatarItem(childId, itemId, cost),
+    buyBoosterPack: (packId: string) => app.buyBoosterPack(childId, packId),
+    setTcgBuddy: (cardId: string | null) => app.setTcgBuddy(childId, cardId),
+    setTcgDeck: (cardIds: string[]) => app.setTcgDeck(childId, cardIds),
+    createTradeRequest: (toChildId: ChildId, offeredCardId: string, requestedCardId: string) =>
+      app.createTradeRequest(childId, toChildId, offeredCardId, requestedCardId),
   };
 }
 

@@ -46,7 +46,7 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
   accessory,
   accessoryColor,
   background,
-  size = 100,
+  size,
   className = "",
 }) => {
   // Resolve active option values, falling back to avatar object, then defaults
@@ -86,8 +86,8 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
   return (
     <svg
       viewBox="0 0 200 200"
-      width={size}
-      height={size}
+      width={size ?? "100%"}
+      height={size ?? "100%"}
       className={`select-none rounded-[2rem] shadow-soft ${className}`}
       xmlns="http://www.w3.org/2000/svg"
     >

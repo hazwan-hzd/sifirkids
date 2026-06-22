@@ -546,6 +546,43 @@ export const CARDS: Card[] = [
     description: "A divine dragon protector of Quranic letters. Very wise and powerful.",
     set: "promo",
   },
+  // --- Gojo Promotional Set ---
+  {
+    id: "promo-gojo-01",
+    name: "Gojo-mander",
+    emoji: "🔥🕶️",
+    type: "fire",
+    rarity: "rare",
+    hp: 90,
+    attackName: "Hollow Blue Flame",
+    attackDmg: 45,
+    description: "A cool Charmander wearing dark sunglasses. Blue flames erupt from its tail.",
+    set: "promo",
+  },
+  {
+    id: "promo-gojo-02",
+    name: "Gojo-gar",
+    emoji: "😈☁️",
+    type: "shadow",
+    rarity: "ultra_rare",
+    hp: 130,
+    attackName: "Infinite Void Smile",
+    attackDmg: 70,
+    description: "Gengar with spiky white hair. Smiles maniacally while trapping opponents in void.",
+    set: "promo",
+  },
+  {
+    id: "promo-gojo-03",
+    name: "Gojo-two",
+    emoji: "🧬🔴",
+    type: "legendary",
+    rarity: "secret_gold",
+    hp: 180,
+    attackName: "Hollow Purple Sphere",
+    attackDmg: 100,
+    description: "Mewtwo wielding the ultimate Hollow Purple. Possesses absolute psychic domain.",
+    set: "promo",
+  },
 ];
 
 export interface PackConfig {
@@ -556,6 +593,13 @@ export interface PackConfig {
   cardCount: number;
   description: string;
   allowedSets: string[];
+  rarityWeights: {
+    common: number;
+    uncommon: number;
+    rare: number;
+    ultra_rare: number;
+    secret_gold: number;
+  };
 }
 
 export const PACKS: PackConfig[] = [
@@ -567,6 +611,13 @@ export const PACKS: PackConfig[] = [
     cardCount: 5,
     description: "Contains basic Pokémon/One Piece hybrid cards to start your binder.",
     allowedSets: ["starter"],
+    rarityWeights: {
+      common: 80,
+      uncommon: 20,
+      rare: 0,
+      ultra_rare: 0,
+      secret_gold: 0,
+    },
   },
   {
     id: "pack-monsters",
@@ -576,6 +627,13 @@ export const PACKS: PackConfig[] = [
     cardCount: 5,
     description: "High chance of Pokémon elementals and evolutionary stage cards.",
     allowedSets: ["starter", "monsters"],
+    rarityWeights: {
+      common: 50,
+      uncommon: 30,
+      rare: 15,
+      ultra_rare: 5,
+      secret_gold: 0,
+    },
   },
   {
     id: "pack-crews",
@@ -585,6 +643,13 @@ export const PACKS: PackConfig[] = [
     cardCount: 5,
     description: "High chance of Straw Hat crew and Marine officers.",
     allowedSets: ["starter", "crews"],
+    rarityWeights: {
+      common: 50,
+      uncommon: 30,
+      rare: 15,
+      ultra_rare: 5,
+      secret_gold: 0,
+    },
   },
   {
     id: "pack-legendary",
@@ -594,6 +659,13 @@ export const PACKS: PackConfig[] = [
     cardCount: 5,
     description: "Guarantees at least one Rare or better card. Chance of Secret Gold!",
     allowedSets: ["starter", "monsters", "crews", "promo"],
+    rarityWeights: {
+      common: 30,
+      uncommon: 30,
+      rare: 25,
+      ultra_rare: 10,
+      secret_gold: 5,
+    },
   },
 ];
 
