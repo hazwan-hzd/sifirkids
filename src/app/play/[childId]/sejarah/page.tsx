@@ -78,7 +78,7 @@ export default function SejarahPage({
   if (childId !== "dhiya") notFound();
   const id = childId as ChildId;
 
-  const { child, hydrated, recordQuiz } = useChild(id);
+  const { child, hydrated, recordQuiz, deductPoints } = useChild(id);
   const [screen, setScreen] = useState<Screen>("chapters");
   const [chapters, setChapters] = useState<ChapterInfo[]>([]);
   const [pastResults, setPastResults] = useState<SejarahQuizResult[]>([]);
@@ -94,6 +94,8 @@ export default function SejarahPage({
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [vocabInput, setVocabInput] = useState("");
+  const [usedHint, setUsedHint] = useState(false);
+  const [showHintConfirm, setShowHintConfirm] = useState(false);
   const questionStartRef = useRef<number>(Date.now());
   const quizStartRef = useRef<number>(Date.now());
 
@@ -128,6 +130,8 @@ export default function SejarahPage({
     setSelectedAnswer(null);
     setShowExplanation(false);
     setVocabInput("");
+    setUsedHint(false);
+    setShowHintConfirm(false);
     questionStartRef.current = Date.now();
     quizStartRef.current = Date.now();
     setScreen("quiz");
@@ -182,6 +186,8 @@ export default function SejarahPage({
       setSelectedAnswer(null);
       setShowExplanation(false);
       setVocabInput("");
+      setUsedHint(false);
+      setShowHintConfirm(false);
       questionStartRef.current = Date.now();
     } else {
       // Quiz complete - calculate and save
@@ -583,6 +589,58 @@ export default function SejarahPage({
             </div>
           )}
         </Card>
+
+        {/* Give me a Hint (Dhiya only) */}
+        {id === "dhiya" && !alreadyAnswered && (
+          <div className="mb-4">
+            {!usedHint ? (
+              !showHintConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowHintConfirm(true)}
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border border-sunny-200 bg-sunny-50 text-sunny-700 hover:bg-sunny-100 font-display text-sm font-semibold transition-all shadow-sm"
+                >
+                  💡 Give me a Hint (-10 mata)
+                </button>
+              ) : (
+                <div className="rounded-xl border border-sunny-300 bg-sunny-50 p-4 animate-slide">
+                  <p className="text-sm font-semibold text-sunny-800 mb-3 text-center">
+                    Gunakan 10 mata ganjaran untuk melihat pembayang?
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        deductPoints(10);
+                        setUsedHint(true);
+                        setShowHintConfirm(false);
+                      }}
+                      className="bg-sunny-500 hover:bg-sunny-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition-all"
+                    >
+                      Ya, Tunjukkan Hint
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowHintConfirm(false)}
+                      className="bg-white border border-ink/10 hover:bg-ink/5 text-ink text-xs font-bold py-2 px-4 rounded-lg transition-all"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="rounded-xl border border-sunny-400 bg-sunny-50/50 p-4 text-left animate-slide">
+                <h4 className="font-display font-bold text-sunny-800 mb-2 flex items-center gap-1.5">
+                  💡 Give me a Hint
+                </h4>
+                <p className="text-sm text-sunny-950 font-medium leading-relaxed whitespace-pre-line">
+                  {q.explanation || "Tiada pembayang khusus untuk soalan ini. Fikirkan kata kunci dalam soalan."}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Submit / Next button */}
         {!alreadyAnswered ? (

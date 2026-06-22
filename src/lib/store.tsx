@@ -167,6 +167,7 @@ interface AppContextValue {
   recordQuiz: (childId: ChildId, input: QuizResultInput) => QuizOutcome;
   addTime: (childId: ChildId, seconds: number) => void;
   claimReward: (childId: ChildId, rewardId: string) => boolean;
+  deductPoints: (childId: ChildId, amount: number) => void;
   resolveClaim: (childId: ChildId, claimId: string, approve: boolean) => void;
   setParentPin: (pin: string) => void;
   setReminderTime: (time: string) => void;
@@ -534,6 +535,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateChild],
   );
 
+  const deductPoints = useCallback(
+    (childId: ChildId, amount: number) => {
+      updateChild(childId, (c) => ({
+        ...c,
+        rewards: {
+          ...c.rewards,
+          points: Math.max(0, c.rewards.points - amount),
+        },
+      }));
+    },
+    [updateChild],
+  );
+
   const resolveClaim = useCallback(
     (childId: ChildId, claimId: string, approve: boolean) => {
       updateChild(childId, (c) => {
@@ -602,6 +616,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       recordQuiz,
       addTime,
       claimReward,
+      deductPoints,
       resolveClaim,
       setParentPin,
       setReminderTime,
@@ -615,6 +630,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       recordQuiz,
       addTime,
       claimReward,
+      deductPoints,
       resolveClaim,
       setParentPin,
       setReminderTime,
@@ -643,6 +659,7 @@ export function useChild(childId: ChildId) {
     recordQuiz: (input: QuizResultInput) => app.recordQuiz(childId, input),
     addTime: (s: number) => app.addTime(childId, s),
     claimReward: (rewardId: string) => app.claimReward(childId, rewardId),
+    deductPoints: (amount: number) => app.deductPoints(childId, amount),
     setDailyGoal: (g: number) => app.setDailyGoal(childId, g),
   };
 }
