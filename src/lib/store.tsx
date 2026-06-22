@@ -18,6 +18,7 @@ import {
 } from "react";
 import type {
   AppState,
+  ChildAvatar,
   ChildData,
   ChildId,
   ModuleId,
@@ -43,6 +44,25 @@ const MAX_SESSIONS = 200; // cap per child to keep storage small
 
 /* ----------------------------- defaults ----------------------------- */
 
+export function defaultAvatar(): ChildAvatar {
+  return {
+    skin: "peach",
+    hairStyle: "spiky",
+    hairColor: "#ffba00", // sunny
+    eyes: "happy",
+    top: "tshirt",
+    topColor: "#ff5a47", // coral
+    dress: "none",
+    dressColor: "#ff5a47",
+    bottom: "pants",
+    bottomColor: "#1f9bff", // sky
+    accessory: "none",
+    accessoryColor: "#ffba00",
+    background: "gradient",
+    unlockedItems: ["skin-peach", "hair-spiky", "eyes-happy", "top-tshirt", "bottom-pants", "bg-gradient"],
+  };
+}
+
 function defaultChild(profile: Profile): ChildData {
   return {
     profile,
@@ -58,6 +78,7 @@ function defaultChild(profile: Profile): ChildData {
     },
     metrics: { totalOpens: 0, lastOpen: null, totalTimeSec: 0 },
     sessions: [],
+    avatar: defaultAvatar(),
   };
 }
 
@@ -67,7 +88,7 @@ function defaultState(): AppState {
   return { version: 1, children, parentPin: "3675", reminderTime: "18:00" };
 }
 
-function sanitizeChildData(c: ChildData): ChildData {
+function reconcileChildPoints(c: ChildData): ChildData {
   let modified = false;
   const sessions = c.sessions.map((s) => {
     if (s.id === "66f23b02-bbf1-43d1-ad9a-50e84c8692a8" && s.pointsEarned === 18500) {
@@ -84,8 +105,6 @@ function sanitizeChildData(c: ChildData): ChildData {
     }
     return s;
   });
-
-  if (!modified) return c;
 
   // Re-calculate daily history points for the bugged date: 2026-06-22
   const daily = { ...c.daily, history: { ...c.daily.history } };
@@ -132,7 +151,7 @@ function reconcile(raw: unknown): AppState {
     for (const p of PROFILES) {
       const sc = saved.children[p.id];
       if (sc) {
-        merged.children[p.id] = sanitizeChildData({
+        merged.children[p.id] = reconcileChildPoints({
           ...defaultChild(p),
           ...sc,
           profile: p, // profile is source-of-truth from code
@@ -142,6 +161,7 @@ function reconcile(raw: unknown): AppState {
           multiplication: { ...sc.multiplication },
           arabic: { ...sc.arabic },
           sessions: sc.sessions ?? [],
+          avatar: sc.avatar ?? defaultAvatar(),
         });
       }
     }
@@ -228,6 +248,8 @@ interface AppContextValue {
   setReminderTime: (time: string) => void;
   setDailyGoal: (childId: ChildId, goal: number) => void;
   resetChild: (childId: ChildId) => void;
+  saveAvatar: (childId: ChildId, look: ChildAvatar) => void;
+  unlockAvatarItem: (childId: ChildId, itemId: string, cost: number) => boolean;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -327,7 +349,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        next.children[p.id] = sanitizeChildData({
+        next.children[p.id] = reconcileChildPoints({
           ...local,
           sessions,
           multiplication: mergeBucket(local.multiplication, remote.multiplication, false),
@@ -606,6 +628,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateChild],
   );
 
+  const saveAvatar = useCallback(
+    (childId: ChildId, look: ChildAvatar) => {
+      updateChild(childId, (c) => ({
+        ...c,
+        avatar: look,
+      }));
+    },
+    [updateChild],
+  );
+
+  const unlockAvatarItem = useCallback(
+    (childId: ChildId, itemId: string, cost: number): boolean => {
+      let ok = false;
+      updateChild(childId, (c) => {
+        const points = c.rewards.points;
+        const currentAvatar = c.avatar ?? defaultAvatar();
+        if (points < cost || currentAvatar.unlockedItems.includes(itemId)) {
+          return c;
+        }
+        ok = true;
+        return {
+          ...c,
+          rewards: {
+            ...c.rewards,
+            points: points - cost,
+          },
+          avatar: {
+            ...currentAvatar,
+            unlockedItems: [...currentAvatar.unlockedItems, itemId],
+          },
+        };
+      });
+      return ok;
+    },
+    [updateChild],
+  );
+
   const resolveClaim = useCallback(
     (childId: ChildId, claimId: string, approve: boolean) => {
       updateChild(childId, (c) => {
@@ -680,6 +739,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setReminderTime,
       setDailyGoal,
       resetChild,
+      saveAvatar,
+      unlockAvatarItem,
     }),
     [
       state,
@@ -694,6 +755,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setReminderTime,
       setDailyGoal,
       resetChild,
+      saveAvatar,
+      unlockAvatarItem,
     ],
   );
 
@@ -719,6 +782,8 @@ export function useChild(childId: ChildId) {
     claimReward: (rewardId: string) => app.claimReward(childId, rewardId),
     deductPoints: (amount: number) => app.deductPoints(childId, amount),
     setDailyGoal: (g: number) => app.setDailyGoal(childId, g),
+    saveAvatar: (look: ChildAvatar) => app.saveAvatar(childId, look),
+    unlockAvatarItem: (itemId: string, cost: number) => app.unlockAvatarItem(childId, itemId, cost),
   };
 }
 

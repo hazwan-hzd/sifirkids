@@ -46,7 +46,7 @@ export default function ScoreboardPage() {
   });
 
   const ranked = [...kids].sort(
-    (a, b) => b.child.rewards.totalEarned - a.child.rewards.totalEarned,
+    (a, b) => b.child.rewards.points - a.child.rewards.points,
   );
 
   return (
@@ -82,9 +82,6 @@ export default function ScoreboardPage() {
               <div className="min-w-0 flex-1">
                 <p className={cn("font-display text-2xl font-bold", c.text)}>
                   {k.child.profile.name}
-                </p>
-                <p className="font-display text-sm text-ink/70">
-                  {k.child.rewards.totalEarned.toLocaleString()} ⭐ earned all-time
                 </p>
               </div>
               <PointsBadge points={k.child.rewards.points} />

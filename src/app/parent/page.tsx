@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/lib/store";
 import { useSupabaseData, type SupabaseChildData } from "@/lib/supabase-read";
 import { PROFILES, COLOR_CLASSES, TABLES, ARABIC_LETTERS } from "@/lib/data";
-import type { ChildData, ChildId, QuizSession, TopicStat } from "@/lib/types";
-import { PageShell, Loading, BackButton, PointsBadge } from "@/components/ui";
+import type { ChildData, ChildId, QuizSession, TopicStat, DayRecord } from "@/lib/types";
+import { PageShell, Loading, BackButton, PointsBadge, Card } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { PinGate } from "./PinGate";
 import { MetricCard } from "./MetricCard";
@@ -107,13 +107,86 @@ export default function ParentPage() {
   const { state, hydrated } = useApp();
   const { data: sbData, loading: sbLoading, error: sbError, refresh: sbRefresh } = useSupabaseData();
   const [unlocked, setUnlocked] = useState(false);
-  const [active, setActive] = useState<ChildId>(PROFILES[0].id);
+  const [active, setActive] = useState<ChildId | "all">("all");
+
+  const combinedChildData = useMemo(() => {
+    const kidsData = PROFILES.map((p) => {
+      const local = state.children[p.id];
+      const remote = sbData?.[p.id];
+      return mergeChildData(local, remote);
+    });
+
+    // Merge sessions and sort by date descending
+    const allSessions = kidsData.flatMap((kd) => kd.sessions)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Merge daily history
+    const mergedHistory: Record<string, DayRecord> = {};
+    for (const kd of kidsData) {
+      for (const [day, rec] of Object.entries(kd.daily.history)) {
+        if (!mergedHistory[day]) {
+          mergedHistory[day] = { ...rec };
+        } else {
+          mergedHistory[day].sessions += rec.sessions;
+          mergedHistory[day].pointsEarned += rec.pointsEarned;
+          mergedHistory[day].questionsAnswered += rec.questionsAnswered;
+          mergedHistory[day].opens += rec.opens;
+        }
+      }
+    }
+
+    const totalOpens = kidsData.reduce((sum, kd) => sum + kd.metrics.totalOpens, 0);
+    const lastOpenTimes = kidsData
+      .map((kd) => kd.metrics.lastOpen)
+      .filter(Boolean) as string[];
+    const lastOpen = lastOpenTimes.length > 0
+      ? new Date(Math.max(...lastOpenTimes.map((t) => new Date(t).getTime()))).toISOString()
+      : null;
+
+    const totalTimeSec = kidsData.reduce((sum, kd) => sum + kd.metrics.totalTimeSec, 0);
+    const currentStreak = Math.max(...kidsData.map((kd) => kd.daily.currentStreak));
+    const longestStreak = Math.max(...kidsData.map((kd) => kd.daily.longestStreak));
+    
+    // Sum points
+    const points = kidsData.reduce((sum, kd) => sum + kd.rewards.points, 0);
+    const totalEarned = kidsData.reduce((sum, kd) => sum + kd.rewards.totalEarned, 0);
+
+    return {
+      profile: {
+        id: "all" as ChildId,
+        name: "All Kids",
+        avatar: "👥",
+        color: "grape" as const,
+      },
+      sessions: allSessions,
+      daily: {
+        history: mergedHistory,
+        currentStreak,
+        longestStreak,
+        lastActiveDate: null,
+        dailyGoal: 0,
+      },
+      metrics: {
+        totalOpens,
+        lastOpen,
+        totalTimeSec,
+      },
+      rewards: {
+        points,
+        totalEarned,
+        claims: kidsData.flatMap((kd) => kd.rewards.claims),
+      },
+      multiplication: {},
+      arabic: {},
+    } as ChildData;
+  }, [state, sbData]);
 
   const child = useMemo(() => {
+    if (active === "all") return combinedChildData;
     const local = state.children[active];
     const remote = sbData?.[active];
     return mergeChildData(local, remote);
-  }, [state, active, sbData]);
+  }, [state, active, sbData, combinedChildData]);
 
   const c = COLOR_CLASSES[child.profile.color];
 
@@ -122,8 +195,21 @@ export default function ParentPage() {
     const totalQ = sessions.reduce((a, s) => a + s.total, 0);
     const totalC = sessions.reduce((a, s) => a + s.correct, 0);
     const accuracy = totalQ ? Math.round((totalC / totalQ) * 100) : 0;
-    const mathMastered = TABLES.filter((t) => child.multiplication[String(t)]?.mastered).length;
-    const arabicMastered = ARABIC_LETTERS.filter((l) => child.arabic[l.id]?.mastered).length;
+    
+    let mathMastered = 0;
+    let arabicMastered = 0;
+    if (active === "all") {
+      PROFILES.forEach((p) => {
+        const local = state.children[p.id];
+        const remote = sbData?.[p.id];
+        const merged = mergeChildData(local, remote);
+        mathMastered += TABLES.filter((t) => merged.multiplication[String(t)]?.mastered).length;
+        arabicMastered += ARABIC_LETTERS.filter((l) => merged.arabic[l.id]?.mastered).length;
+      });
+    } else {
+      mathMastered = TABLES.filter((t) => child.multiplication[String(t)]?.mastered).length;
+      arabicMastered = ARABIC_LETTERS.filter((l) => child.arabic[l.id]?.mastered).length;
+    }
 
     const days = lastNDays(14);
     const questionsPerDay: BarDatum[] = days.map((d) => ({
@@ -168,7 +254,7 @@ export default function ParentPage() {
     }));
 
     return { totalQ, accuracy, mathMastered, arabicMastered, questionsPerDay, accuracyTrend, timePerDay, topicDistribution };
-  }, [child]);
+  }, [child, active, state.children, sbData]);
 
   if (!hydrated) {
     return (
@@ -219,7 +305,17 @@ export default function ParentPage() {
           </div>
 
           {/* Child tabs */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setActive("all")}
+              className={cn(
+                "tap flex-1 min-w-[120px] rounded-2xl px-3 py-3 font-display font-bold transition",
+                active === "all" ? "bg-grape-500 text-white shadow-[var(--shadow-pop)]" : "bg-white/70 text-grape-600/80",
+              )}
+            >
+              <span className="mr-1">👥</span>
+              All Kids
+            </button>
             {PROFILES.map((p) => {
               const pc = COLOR_CLASSES[p.color];
               const on = p.id === active;
@@ -229,7 +325,7 @@ export default function ParentPage() {
                   key={p.id}
                   onClick={() => setActive(p.id)}
                   className={cn(
-                    "tap flex-1 rounded-2xl px-3 py-3 font-display font-bold transition",
+                    "tap flex-1 min-w-[120px] rounded-2xl px-3 py-3 font-display font-bold transition",
                     on ? cn(pc.bg, "text-white shadow-[var(--shadow-pop)]") : "bg-white/70 text-ink/60",
                   )}
                 >
@@ -254,10 +350,9 @@ export default function ParentPage() {
               <MetricCard icon="⏱️" label="Time spent" value={formatDuration(child.metrics.totalTimeSec)} />
               <MetricCard icon="🔥" label="Streak" value={`${child.daily.currentStreak}d`} sub={`best ${child.daily.longestStreak}d`} />
               <MetricCard icon="🎯" label="Accuracy" value={`${stats.accuracy}%`} sub={`${stats.totalQ} questions`} />
-              <MetricCard icon="⭐" label="Points now" value={child.rewards.points} />
-              <MetricCard icon="🏅" label="Lifetime pts" value={child.rewards.totalEarned} />
-              <MetricCard icon="✖️" label="Tables" value={`${stats.mathMastered}/${TABLES.length}`} sub="mastered" />
-              <MetricCard icon="🔤" label="Letters" value={`${stats.arabicMastered}/${ARABIC_LETTERS.length}`} sub="mastered" />
+              <MetricCard icon="⭐" label="Stars" value={child.rewards.points} />
+              <MetricCard icon="✖️" label="Tables" value={active === "all" ? `${stats.mathMastered}/${TABLES.length * PROFILES.length}` : `${stats.mathMastered}/${TABLES.length}`} sub="mastered" />
+              <MetricCard icon="🔤" label="Letters" value={active === "all" ? `${stats.arabicMastered}/${ARABIC_LETTERS.length * PROFILES.length}` : `${stats.arabicMastered}/${ARABIC_LETTERS.length}`} sub="mastered" />
             </div>
           </div>
 
@@ -271,21 +366,102 @@ export default function ParentPage() {
             <Sparkline title="Accuracy trend (recent quizzes)" values={stats.accuracyTrend} color={COLOR_CLASSES.teal.solid} />
           </div>
 
-          {/* Mastery */}
-          <MultiplicationGrid child={child} />
-          <ArabicGrid child={child} />
+          {/* Progress Section */}
+          {active === "all" ? (
+            <div className="space-y-4">
+              <h3 className="font-display text-xl font-bold text-ink">Individual Progress Overview</h3>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {PROFILES.map((p) => {
+                  const local = state.children[p.id];
+                  const remote = sbData?.[p.id];
+                  const childData = mergeChildData(local, remote);
+                  const childColor = COLOR_CLASSES[p.color];
 
-          {/* Weak Letters */}
-          <WeakLetters child={child} />
+                  const childSessions = childData.sessions;
+                  const childTotalQ = childSessions.reduce((a, s) => a + s.total, 0);
+                  const childTotalC = childSessions.reduce((a, s) => a + s.correct, 0);
+                  const childAccuracy = childTotalQ ? Math.round((childTotalC / childTotalQ) * 100) : 0;
 
-          {/* Sejarah Progress (Dhiya only) */}
-          {active === "dhiya" && <SejarahProgress />}
+                  const childTablesMastered = TABLES.filter(
+                    (t) => childData.multiplication[String(t)]?.mastered,
+                  ).length;
+                  const childLettersMastered = ARABIC_LETTERS.filter(
+                    (l) => childData.arabic[l.id]?.mastered,
+                  ).length;
 
-          {/* Bahasa Melayu Progress (All children) */}
-          <BahasaMelayuProgress childId={active} childName={child.profile.name} />
+                  return (
+                    <Card
+                      key={p.id}
+                      className={cn("border-2 hover:shadow-md transition-shadow p-4 bg-white", childColor.border)}
+                    >
+                      <div className="mb-3 flex items-center justify-between border-b pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-3xl">{p.avatar}</span>
+                          <span className={cn("font-display text-lg font-bold", childColor.text)}>
+                            {p.name}
+                          </span>
+                        </div>
+                        <PointsBadge points={childData.rewards.points} />
+                      </div>
+                      
+                      <div className="space-y-2 text-sm text-ink/80">
+                        <div className="flex justify-between">
+                          <span>Stars:</span>
+                          <span className="font-bold">{childData.rewards.points} ⭐</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Accuracy:</span>
+                          <span className="font-bold">{childAccuracy}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Time spent:</span>
+                          <span className="font-bold">{formatDuration(childData.metrics.totalTimeSec)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tables mastered:</span>
+                          <span className="font-bold">{childTablesMastered}/{TABLES.length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Letters mastered:</span>
+                          <span className="font-bold">{childLettersMastered}/{ARABIC_LETTERS.length}</span>
+                        </div>
+                      </div>
 
-          {/* Dynamic Vocab Gaps Panel (All children) */}
-          <VocabGapsPanel childId={active} childName={child.profile.name} />
+                      <button
+                        onClick={() => setActive(p.id)}
+                        className={cn(
+                          "mt-4 w-full py-2 rounded-xl text-xs font-bold text-center border transition-colors bg-transparent",
+                          childColor.text,
+                          childColor.border,
+                          "hover:bg-black/5"
+                        )}
+                      >
+                        View Detailed Progress
+                      </button>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Mastery */}
+              <MultiplicationGrid child={child} />
+              <ArabicGrid child={child} />
+
+              {/* Weak Letters */}
+              <WeakLetters child={child} />
+
+              {/* Sejarah Progress (Dhiya only) */}
+              {active === "dhiya" && <SejarahProgress />}
+
+              {/* Bahasa Melayu Progress (All children) */}
+              <BahasaMelayuProgress childId={active} childName={child.profile.name} />
+
+              {/* Dynamic Vocab Gaps Panel (All children) */}
+              <VocabGapsPanel childId={active} childName={child.profile.name} />
+            </>
+          )}
 
           {/* Cross-child controls */}
           <RewardApprovals />

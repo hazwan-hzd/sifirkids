@@ -110,6 +110,25 @@ export interface ChildData {
   metrics: Metrics;
   /** newest last; capped to keep storage small */
   sessions: QuizSession[];
+  /** custom avatar configuration */
+  avatar?: ChildAvatar;
+}
+
+export interface ChildAvatar {
+  skin: string;
+  hairStyle: string;
+  hairColor: string;
+  eyes: string;
+  top: string;
+  topColor: string;
+  dress: string;
+  dressColor: string;
+  bottom: string;
+  bottomColor: string;
+  accessory: string;
+  accessoryColor: string;
+  background: string;
+  unlockedItems: string[];
 }
 
 export interface AppState {
