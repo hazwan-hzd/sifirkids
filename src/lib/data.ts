@@ -84,15 +84,15 @@ export function getLetter(id: string): ArabicLetter | undefined {
 /* ------------------------------------------------------------------ */
 
 export const POINTS = {
-  perCorrect: 10,
+  perCorrect: 1000,
   /** added per question when the whole quiz is perfect */
-  perfectBonusPerQuestion: 5,
+  perfectBonusPerQuestion: 500,
   /** added once per quiz for keeping a long streak */
-  streakBonus: 20,
+  streakBonus: 2000,
   /** streak length that unlocks streakBonus */
   streakBonusAt: 5,
   /** bonus for keeping the daily streak alive */
-  dailyStreakBonus: 15,
+  dailyStreakBonus: 1500,
 };
 
 /** Mastery: at least this many attempts AND accuracy at/above threshold. */
@@ -112,14 +112,14 @@ export interface Reward {
 
 /** Reward shop. Parent approves claims from the dashboard. */
 export const REWARDS: Reward[] = [
-  { id: "sticker", name: "Sticker", icon: "✨", cost: 50 },
-  { id: "icecream", name: "Ice Cream", icon: "🍦", cost: 150 },
-  { id: "screen30", name: "30 min Screen Time", icon: "📺", cost: 200 },
-  { id: "pickdinner", name: "Pick Dinner", icon: "🍕", cost: 300 },
-  { id: "movienight", name: "Movie Night", icon: "🎬", cost: 400 },
-  { id: "stayuplate", name: "Stay Up Late", icon: "🌙", cost: 500 },
-  { id: "toy", name: "New Toy", icon: "🧸", cost: 1000 },
-  { id: "outing", name: "Day Outing", icon: "🎡", cost: 2000 },
+  { id: "sticker", name: "Sticker", icon: "✨", cost: 5000 },
+  { id: "icecream", name: "Ice Cream", icon: "🍦", cost: 15000 },
+  { id: "screen30", name: "30 min Screen Time", icon: "📺", cost: 20000 },
+  { id: "pickdinner", name: "Pick Dinner", icon: "🍕", cost: 30000 },
+  { id: "movienight", name: "Movie Night", icon: "🎬", cost: 40000 },
+  { id: "stayuplate", name: "Stay Up Late", icon: "🌙", cost: 50000 },
+  { id: "toy", name: "New Toy", icon: "🧸", cost: 100000 },
+  { id: "outing", name: "Day Outing", icon: "🎡", cost: 200000 },
 ];
 
 export function getReward(id: string): Reward | undefined {

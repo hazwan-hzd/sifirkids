@@ -3,7 +3,7 @@
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CHILD_IDS, COLOR_CLASSES } from "@/lib/data";
+import { CHILD_IDS, COLOR_CLASSES, POINTS } from "@/lib/data";
 import type { ChildId } from "@/lib/types";
 import { useChild } from "@/lib/store";
 import {
@@ -183,8 +183,8 @@ export default function PeribahasaPage({
         (Date.now() - quizStartRef.current) / 1000,
       );
       const pointsEarned =
-        correctCount * 10 +
-        (correctCount === questions.length ? questions.length * 5 : 0);
+        correctCount * POINTS.perCorrect +
+        (correctCount === questions.length ? questions.length * POINTS.perfectBonusPerQuestion : 0);
 
       // Record to the SifirKids points economy
       recordQuiz({
@@ -469,18 +469,18 @@ export default function PeribahasaPage({
                   onClick={() => setShowHintConfirm(true)}
                   className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border border-sunny-200 bg-sunny-50 text-sunny-700 hover:bg-sunny-100 font-display text-sm font-semibold transition-all shadow-sm"
                 >
-                  💡 Give me a Hint (-10 mata)
+                  💡 Give me a Hint (-1000 mata)
                 </button>
               ) : (
                 <div className="rounded-xl border border-sunny-300 bg-sunny-50 p-4 animate-slide">
                   <p className="text-sm font-semibold text-sunny-800 mb-3 text-center">
-                    Gunakan 10 mata ganjaran untuk melihat pembayang?
+                    Gunakan 1000 mata ganjaran untuk melihat pembayang?
                   </p>
                   <div className="flex gap-2 justify-center">
                     <button
                       type="button"
                       onClick={() => {
-                        deductPoints(10);
+                        deductPoints(1000);
                         setUsedHint(true);
                         setShowHintConfirm(false);
                       }}
