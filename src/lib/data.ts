@@ -674,6 +674,19 @@ export const CARDS: Card[] = [
     set: "mha",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-06.png",
   },
+  {
+    id: "mha-07",
+    name: "Tsuyu Asui",
+    emoji: "🐸💚",
+    type: "hero",
+    rarity: "common",
+    hp: 60,
+    attackName: "Frog Tongue Strike",
+    attackDmg: 20,
+    description: "Practical and calm. Can do anything a frog can do.",
+    set: "mha",
+    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-07.png",
+  },
 
   // --- Squishy Squad Set ---
   {
