@@ -989,13 +989,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             nextSenderColl[trade.requestedCardId] = (nextSenderColl[trade.requestedCardId] ?? 0) + 1;
             nextReceiverColl[trade.offeredCardId] = (nextReceiverColl[trade.offeredCardId] ?? 0) + 1;
 
+            const nextSenderTcg = { ...senderTcg, collection: nextSenderColl };
+            const nextReceiverTcg = { ...receiverTcg, collection: nextReceiverColl };
+
+            // Sync to Supabase
+            if (supabase) {
+              supabase
+                .from("child_profiles")
+                .upsert({ id: trade.fromChildId, tcg: nextSenderTcg, updated_at: new Date().toISOString() })
+                .then();
+              supabase
+                .from("child_profiles")
+                .upsert({ id: trade.toChildId, tcg: nextReceiverTcg, updated_at: new Date().toISOString() })
+                .then();
+            }
+
             nextChildren[trade.fromChildId as ChildId] = {
               ...sender,
-              tcg: { ...senderTcg, collection: nextSenderColl },
+              tcg: nextSenderTcg,
             };
             nextChildren[trade.toChildId as ChildId] = {
               ...receiver,
-              tcg: { ...receiverTcg, collection: nextReceiverColl },
+              tcg: nextReceiverTcg,
             };
           }
         }
