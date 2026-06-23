@@ -838,24 +838,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         // Only pull from cards that have artwork (imageUrl set) and match run release rules
         const candidates = CARDS.filter((card) => {
-          const isAllowedSet = pack.allowedSets.includes(card.set);
           const hasImage = !!card.imageUrl;
+          if (!hasImage) return false;
+
           const cardRelease = card.releasedIn ?? "SK-01";
 
-          // Cumulative pool: a run includes its own cards + all cards from earlier runs
+          // When buying from a run: pull from the FULL cumulative card pool
+          // Pack type only controls rarity weights, not which sets can appear
           if (runId) {
-            // Extract the SK identifier from the run ID (e.g., "RUN-SK01-01" → "SK-01")
             const skMatch = runId.match(/SK(\d+)/);
             const runSk = skMatch ? `SK-${skMatch[1]}` : "";
             const runIndex = RUN_RELEASE_ORDER.indexOf(runSk);
             const cardIndex = RUN_RELEASE_ORDER.indexOf(cardRelease);
-            // If card is from a newer run than the one being opened, exclude it
+            // Exclude cards from newer runs
             if (runIndex >= 0 && cardIndex > runIndex) {
               return false;
             }
+            return true; // all sets allowed within the run's pool
           }
 
-          return isAllowedSet && hasImage;
+          // Legacy fallback (no run): use pack's allowedSets filter
+          return pack.allowedSets.includes(card.set);
         });
         if (candidates.length === 0) return c;
 
