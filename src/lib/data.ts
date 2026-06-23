@@ -91,15 +91,15 @@ export function getLetter(id: string): ArabicLetter | undefined {
 /* ------------------------------------------------------------------ */
 
 export const POINTS = {
-  perCorrect: 10,
+  perCorrect: 13,
   /** added per question when the whole quiz is perfect */
-  perfectBonusPerQuestion: 5,
+  perfectBonusPerQuestion: 6,
   /** added once per quiz for keeping a long streak */
-  streakBonus: 20,
+  streakBonus: 25,
   /** streak length that unlocks streakBonus */
   streakBonusAt: 5,
   /** bonus for keeping the daily streak alive */
-  dailyStreakBonus: 15,
+  dailyStreakBonus: 19,
 };
 
 /** Mastery: at least this many attempts AND accuracy at/above threshold. */
@@ -1204,6 +1204,22 @@ export const PACKS: PackConfig[] = [
       rare: 15,
       ultra_rare: 8,
       secret_gold: 2,
+    },
+  },
+  {
+    id: "pack-wc",
+    name: "World Cup Booster",
+    cost: 4000,
+    icon: "⚽",
+    cardCount: 5,
+    description: "SK-02 signature pack! World Cup stars and Jujutsu Kaisen crossover cards.",
+    allowedSets: ["wc", "jjk"],
+    rarityWeights: {
+      common: 35,
+      uncommon: 30,
+      rare: 20,
+      ultra_rare: 12,
+      secret_gold: 3,
     },
   },
 ];
