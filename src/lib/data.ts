@@ -241,6 +241,7 @@ export const CARDS: Card[] = [
     description: "A sparky mouse with big dreams of becoming the Pirate King! Always hungry.",
     set: "starter",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-01.png",
+    releasedIn: "SK-01",
   },
   {
     id: "starter-02",
@@ -254,6 +255,7 @@ export const CARDS: Card[] = [
     description: "Carries three swords/vines in his mouth. Constantly getting lost.",
     set: "starter",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-02.png",
+    releasedIn: "SK-01",
   },
   {
     id: "starter-03",
@@ -267,6 +269,7 @@ export const CARDS: Card[] = [
     description: "Predicts the weather, sings sweet lullabies, and hoards gold coins.",
     set: "starter",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-03.png",
+    releasedIn: "SK-01",
   },
   {
     id: "starter-04",
@@ -280,6 +283,7 @@ export const CARDS: Card[] = [
     description: "An adorable reindeer-fox that dreams of curing every disease.",
     set: "starter",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-04.png",
+    releasedIn: "SK-01",
   },
   {
     id: "starter-05",
@@ -293,6 +297,7 @@ export const CARDS: Card[] = [
     description: "Enforces absolute law while collecting shiny gold coins on patrol.",
     set: "starter",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-05.png",
+    releasedIn: "SK-01",
   },
   {
     id: "starter-06",
@@ -306,6 +311,7 @@ export const CARDS: Card[] = [
     description: "A very brave turtle working hard to become a Marine Admiral.",
     set: "starter",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-09.png",
+    releasedIn: "SK-01",
   },
 
   // --- Monsters Set ---
@@ -321,6 +327,7 @@ export const CARDS: Card[] = [
     description: "Ignites his rubber fists with burning passion and determination.",
     set: "monsters",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-06.png",
+    releasedIn: "SK-01",
   },
   {
     id: "monsters-02",
@@ -333,6 +340,7 @@ export const CARDS: Card[] = [
     attackDmg: 50,
     description: "Luffy's sworn brother. His flame tail burns hotter than magma.",
     set: "monsters",
+    releasedIn: "SK-01",
   },
   {
     id: "monsters-03",
@@ -346,6 +354,7 @@ export const CARDS: Card[] = [
     description: "Speeds through forests, cutting down obstacles with leaf blades.",
     set: "monsters",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-08.png",
+    releasedIn: "SK-01",
   },
   {
     id: "monsters-04",
@@ -358,6 +367,7 @@ export const CARDS: Card[] = [
     attackDmg: 45,
     description: "A fiery kick specialist who refuses to use his hands in battle.",
     set: "monsters",
+    releasedIn: "SK-01",
   },
   {
     id: "monsters-05",
@@ -371,6 +381,7 @@ export const CARDS: Card[] = [
     evolvesFrom: "monsters-01",
     description: "The ultimate fire dragon crew leader. Can melt solid steel.",
     set: "monsters",
+    releasedIn: "SK-01",
   },
   {
     id: "monsters-06",
@@ -385,6 +396,7 @@ export const CARDS: Card[] = [
     description: "A master of the forest and swords. Can summon spectral sword vines.",
     set: "monsters",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-12.png",
+    releasedIn: "SK-01",
   },
   {
     id: "monsters-07",
@@ -398,6 +410,7 @@ export const CARDS: Card[] = [
     evolvesFrom: "monsters-04",
     description: "Spins at supersonic speed to ignite his legs in white-hot flames.",
     set: "monsters",
+    releasedIn: "SK-01",
   },
   {
     id: "monsters-08",
@@ -412,6 +425,7 @@ export const CARDS: Card[] = [
     description: "The Sun God Nika incarnate. Can turn anything into rubber and lightning!",
     set: "monsters",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-15.png",
+    releasedIn: "SK-01",
   },
 
   // --- Crews Set ---
@@ -426,6 +440,7 @@ export const CARDS: Card[] = [
     attackDmg: 45,
     description: "Captain of the Straw Hats. Will do anything for food and friends.",
     set: "crews",
+    releasedIn: "SK-01",
   },
   {
     id: "crews-02",
@@ -438,6 +453,7 @@ export const CARDS: Card[] = [
     attackDmg: 50,
     description: "First mate of the crew. His training knows no limits.",
     set: "crews",
+    releasedIn: "SK-01",
   },
   {
     id: "crews-03",
@@ -450,6 +466,7 @@ export const CARDS: Card[] = [
     attackDmg: 45,
     description: "Cook of the Straw Hats. Fights with passion and culinary pride.",
     set: "crews",
+    releasedIn: "SK-01",
   },
   {
     id: "crews-04",
@@ -462,6 +479,7 @@ export const CARDS: Card[] = [
     attackDmg: 65,
     description: "Leader of the Marines. Believes in absolute, unwavering justice.",
     set: "crews",
+    releasedIn: "SK-01",
   },
   {
     id: "crews-05",
@@ -474,6 +492,7 @@ export const CARDS: Card[] = [
     attackDmg: 60,
     description: "Loves riding his bicycle on frozen ocean waves. Chill personality.",
     set: "crews",
+    releasedIn: "SK-01",
   },
   {
     id: "crews-06",
@@ -486,6 +505,7 @@ export const CARDS: Card[] = [
     attackDmg: 60,
     description: "Can move at the speed of light. Speaks slowly and sarcastically.",
     set: "crews",
+    releasedIn: "SK-01",
   },
   {
     id: "crews-07",
@@ -499,6 +519,7 @@ export const CARDS: Card[] = [
     description: "The strongest creature alive. A massive sea dragon that commands lightning.",
     set: "crews",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-13.png",
+    releasedIn: "SK-01",
   },
   {
     id: "crews-08",
@@ -512,6 +533,7 @@ export const CARDS: Card[] = [
     description: "One of the Four Emperors. Inspires the next generation of pirates.",
     set: "crews",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-14.png",
+    releasedIn: "SK-01",
   },
 
   // --- Promo / Mastery Set ---
@@ -526,6 +548,7 @@ export const CARDS: Card[] = [
     attackDmg: 50,
     description: "A lightning beast unlocked by mastering the 7x Times Table.",
     set: "promo",
+    releasedIn: "SK-01",
   },
   {
     id: "promo-math-02",
@@ -538,6 +561,7 @@ export const CARDS: Card[] = [
     attackDmg: 80,
     description: "The ultimate math wizard. Uses multiplication arrays to shield allies.",
     set: "promo",
+    releasedIn: "SK-01",
   },
   {
     id: "promo-arabic-01",
@@ -550,6 +574,7 @@ export const CARDS: Card[] = [
     attackDmg: 40,
     description: "Stands straight like an Alif. Radiates clean energy and kindness.",
     set: "promo",
+    releasedIn: "SK-01",
   },
   {
     id: "promo-arabic-02",
@@ -562,6 +587,7 @@ export const CARDS: Card[] = [
     attackDmg: 45,
     description: "Bounces around like a frog. Unlocked by practicing Arabic letters.",
     set: "promo",
+    releasedIn: "SK-01",
   },
   {
     id: "promo-arabic-03",
@@ -574,6 +600,7 @@ export const CARDS: Card[] = [
     attackDmg: 90,
     description: "A divine dragon protector of Quranic letters. Very wise and powerful.",
     set: "promo",
+    releasedIn: "SK-01",
   },
   // --- Gojo Promotional Set ---
   {
@@ -587,6 +614,7 @@ export const CARDS: Card[] = [
     attackDmg: 45,
     description: "A cool Charmander wearing dark sunglasses. Blue flames erupt from its tail.",
     set: "promo",
+    releasedIn: "SK-01",
   },
   {
     id: "promo-gojo-02",
@@ -599,6 +627,7 @@ export const CARDS: Card[] = [
     attackDmg: 70,
     description: "Gengar with spiky white hair. Smiles maniacally while trapping opponents in void.",
     set: "promo",
+    releasedIn: "SK-01",
   },
   {
     id: "promo-gojo-03",
@@ -611,6 +640,7 @@ export const CARDS: Card[] = [
     attackDmg: 100,
     description: "Mewtwo wielding the ultimate Hollow Purple. Possesses absolute psychic domain.",
     set: "promo",
+    releasedIn: "SK-01",
   },
 
   // --- My Hero Set ---
@@ -626,6 +656,7 @@ export const CARDS: Card[] = [
     description: "A determined young hero who studies every move before leaping forward.",
     set: "mha",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-01.png",
+    releasedIn: "SK-01",
   },
   {
     id: "mha-02",
@@ -639,6 +670,7 @@ export const CARDS: Card[] = [
     description: "A bright hero who can make heavy problems feel light.",
     set: "mha",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-02.png",
+    releasedIn: "SK-01",
   },
   {
     id: "mha-03",
@@ -652,6 +684,7 @@ export const CARDS: Card[] = [
     description: "A disciplined class representative who races ahead with engine-powered speed.",
     set: "mha",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-03.png",
+    releasedIn: "SK-01",
   },
   {
     id: "mha-04",
@@ -665,6 +698,7 @@ export const CARDS: Card[] = [
     description: "A calm dual-element hero balancing ice control with blazing power.",
     set: "mha",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-04.png",
+    releasedIn: "SK-01",
   },
   {
     id: "mha-05",
@@ -692,6 +726,7 @@ export const CARDS: Card[] = [
     description: "Explosive palms and an explosive personality. Hafeeza's favorite!",
     set: "mha",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-06.png",
+    releasedIn: "SK-01",
   },
   {
     id: "mha-07",
@@ -705,6 +740,7 @@ export const CARDS: Card[] = [
     description: "Practical and calm. Can do anything a frog can do.",
     set: "mha",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/mha-07.png",
+    releasedIn: "SK-01",
   },
 
   // --- Squishy Squad Set ---
@@ -720,6 +756,7 @@ export const CARDS: Card[] = [
     description: "A jiggly boba tea squishy that bounces back no matter how hard you squeeze.",
     set: "squishy",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/sq-01.png",
+    releasedIn: "SK-01",
   },
   {
     id: "sq-02",
@@ -733,6 +770,7 @@ export const CARDS: Card[] = [
     description: "A pink frosted donut squishy with sprinkles that scatter on impact.",
     set: "squishy",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/sq-02.png",
+    releasedIn: "SK-01",
   },
   {
     id: "sq-03",
@@ -746,6 +784,7 @@ export const CARDS: Card[] = [
     description: "So fluffy it looks like a cloud. Rolls into enemies and absorbs all damage.",
     set: "squishy",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/sq-03.png",
+    releasedIn: "SK-01",
   },
   {
     id: "sq-04",
@@ -759,6 +798,7 @@ export const CARDS: Card[] = [
     description: "A sparkly pastel unicorn squishy with a glitter horn. Dhiya's favourite!",
     set: "squishy",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/sq-04.png",
+    releasedIn: "SK-01",
   },
   {
     id: "sq-05",
@@ -773,6 +813,7 @@ export const CARDS: Card[] = [
     description: "A giant pink axolotl squishy. So soft that attacks sink in and disappear.",
     set: "squishy",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/sq-05.png",
+    releasedIn: "SK-01",
   },
   {
     id: "sq-06",
@@ -787,6 +828,7 @@ export const CARDS: Card[] = [
     description: "The legendary golden squishy with galaxy swirl patterns. Compresses matter itself.",
     set: "squishy",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/sq-06.png",
+    releasedIn: "SK-01",
   },
   {
     id: "sq-07",
@@ -800,6 +842,7 @@ export const CARDS: Card[] = [
     description: "A rage-filled squishy shaped like Bakugo. Squeeze it and it EXPLODES with foam sparks!",
     set: "squishy",
     imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/sq-07.png",
+    releasedIn: "SK-01",
   },
 
   // --- World Cup Set ---

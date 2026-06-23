@@ -823,6 +823,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateChild],
   );
 
+  /** Run release order - cumulative pool: each run includes all cards from this run and earlier. */
+  const RUN_RELEASE_ORDER: string[] = ["SK-01", "SK-02"];
+
   const buyBoosterPack = useCallback(
     (childId: ChildId, packId: string, runId?: string): Card[] | null => {
       const pack = PACKS.find((p) => p.id === packId);
@@ -839,9 +842,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const hasImage = !!card.imageUrl;
           const cardRelease = card.releasedIn ?? "SK-01";
 
-          // Exclude new SK-02 cards if we are opening a pack from the SK-01 run shelf
-          if (runId === "RUN-SK01-01" && cardRelease !== "SK-01") {
-            return false;
+          // Cumulative pool: a run includes its own cards + all cards from earlier runs
+          if (runId) {
+            // Extract the SK identifier from the run ID (e.g., "RUN-SK02-01" → "SK-02")
+            const runSk = runId.replace(/^RUN-/, "").replace(/-\d+$/, "");
+            const runIndex = RUN_RELEASE_ORDER.indexOf(runSk);
+            const cardIndex = RUN_RELEASE_ORDER.indexOf(cardRelease);
+            // If card is from a newer run than the one being opened, exclude it
+            if (runIndex >= 0 && cardIndex > runIndex) {
+              return false;
+            }
           }
 
           return isAllowedSet && hasImage;
