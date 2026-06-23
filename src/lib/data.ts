@@ -1256,7 +1256,7 @@ export const PACKS: PackConfig[] = [
     icon: "⚽",
     cardCount: 5,
     description: "SK-02 signature pack! World Cup stars and Jujutsu Kaisen crossover cards.",
-    allowedSets: ["wc", "jjk"],
+    allowedSets: ["wc"],
     rarityWeights: {
       common: 35,
       uncommon: 30,
