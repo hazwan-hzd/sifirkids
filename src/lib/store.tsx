@@ -863,6 +863,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (candidates.length === 0) return c;
 
         // Pull random cards based on weights
+        // Each pack's allowedSets acts as a set affinity boost:
+        // 70% chance to pull from the pack's themed sets, 30% from the rest of the pool
+        const SET_AFFINITY = 0.7;
+
+        const themedCards = candidates.filter((card) => pack.allowedSets.includes(card.set));
+        const otherCards = candidates.filter((card) => !pack.allowedSets.includes(card.set));
+
         const drawCard = (): Card => {
           const rand = Math.random() * 100;
           const w = pack.rarityWeights;
@@ -880,25 +887,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             targetRarity = "common";
           }
 
-          // 80% Squishy / 20% other sets logic for Squishy Squad Pack
-          let poolCandidates = candidates;
-          if (pack.id === "pack-squishy") {
-            const isSquishyPull = Math.random() < 0.8;
-            if (isSquishyPull) {
-              poolCandidates = candidates.filter((card) => card.set === "squishy");
-            } else {
-              poolCandidates = CARDS.filter(
-                (card) => card.set !== "squishy" && !!card.imageUrl
-              );
-            }
-          }
+          // Set affinity: prefer the pack's themed cards
+          const useThemed = themedCards.length > 0 && Math.random() < SET_AFFINITY;
+          const affinityPool = useThemed ? themedCards : (otherCards.length > 0 ? otherCards : candidates);
 
-          let pool = poolCandidates.filter((card) => card.rarity === targetRarity);
+          let pool = affinityPool.filter((card) => card.rarity === targetRarity);
+          // If themed pool has no cards of this rarity, fall back to full candidates
           if (pool.length === 0) {
-            pool = poolCandidates.filter((card) => card.rarity === "common");
+            pool = candidates.filter((card) => card.rarity === targetRarity);
+          }
+          // If still nothing, fall back to common
+          if (pool.length === 0) {
+            pool = candidates.filter((card) => card.rarity === "common");
           }
           if (pool.length === 0) {
-            pool = poolCandidates; // absolute fallback
+            pool = candidates; // absolute fallback
           }
           return drawWeightedCard(pool);
         };
