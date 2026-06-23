@@ -221,7 +221,7 @@ export default function ChildHubPage({
         </Link>
         </>)}
 
-        {/* Papa's business modules — dynamic from registry */}
+        {/* Parent business modules — dynamic from registry */}
         {PARENT_IDS.has(id) && getActiveModulesForChild(id).map((m) => (
           <Link
             key={m.id}
@@ -239,6 +239,24 @@ export default function ChildHubPage({
             </span>
           </Link>
         ))}
+
+        {/* Card game — also available to parents */}
+        {PARENT_IDS.has(id) && (
+          <Link
+            href={`/play/${id}/tcg`}
+            role="button"
+            className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-sky-100 p-6"
+            style={{ animationDelay: "800ms" }}
+          >
+            <span className="text-6xl">🃏</span>
+            <span className="font-display text-2xl font-bold text-sky-600">
+              SifirDex Card Game
+            </span>
+            <span className="text-sm text-ink/70">
+              Open packs, collect cards & trade with the kids
+            </span>
+          </Link>
+        )}
 
         {/* Locked / coming-soon modules — shaded out */}
         {getModulesForChild(id)
