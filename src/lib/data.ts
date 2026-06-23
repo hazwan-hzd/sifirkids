@@ -288,7 +288,7 @@ export const CARDS: Card[] = [
     attackDmg: 25,
     description: "A very brave turtle working hard to become a Marine Admiral.",
     set: "starter",
-    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-06.png",
+    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-09.png",
   },
 
   // --- Monsters Set ---
@@ -303,7 +303,7 @@ export const CARDS: Card[] = [
     attackDmg: 40,
     description: "Ignites his rubber fists with burning passion and determination.",
     set: "monsters",
-    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-08.png",
+    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-06.png",
   },
   {
     id: "monsters-02",
@@ -316,7 +316,6 @@ export const CARDS: Card[] = [
     attackDmg: 50,
     description: "Luffy's sworn brother. His flame tail burns hotter than magma.",
     set: "monsters",
-    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-09.png",
   },
   {
     id: "monsters-03",
@@ -329,6 +328,7 @@ export const CARDS: Card[] = [
     attackDmg: 45,
     description: "Speeds through forests, cutting down obstacles with leaf blades.",
     set: "monsters",
+    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-08.png",
   },
   {
     id: "monsters-04",
@@ -354,7 +354,6 @@ export const CARDS: Card[] = [
     evolvesFrom: "monsters-01",
     description: "The ultimate fire dragon crew leader. Can melt solid steel.",
     set: "monsters",
-    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-12.png",
   },
   {
     id: "monsters-06",
@@ -368,7 +367,7 @@ export const CARDS: Card[] = [
     evolvesFrom: "monsters-03",
     description: "A master of the forest and swords. Can summon spectral sword vines.",
     set: "monsters",
-    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-13.png",
+    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-12.png",
   },
   {
     id: "monsters-07",
@@ -382,7 +381,6 @@ export const CARDS: Card[] = [
     evolvesFrom: "monsters-04",
     description: "Spins at supersonic speed to ignite his legs in white-hot flames.",
     set: "monsters",
-    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-14.png",
   },
   {
     id: "monsters-08",
