@@ -1,9 +1,9 @@
 // SifirKids data model. This is the shared contract for every feature module.
 // All persisted state lives under one AppState root in localStorage.
 
-export type ChildId = "hafeeza" | "dhiya" | "ilyas";
+export type ChildId = "hafeeza" | "dhiya" | "ilyas" | "papa";
 
-export type ModuleId = "multiplication" | "arabic" | "sejarah" | "peribahasa" | "science" | "bahasa_melayu" | "pafa_kafa";
+export type ModuleId = "multiplication" | "arabic" | "sejarah" | "peribahasa" | "science" | "bahasa_melayu" | "pafa_kafa" | "ai_specs" | "integration_logic" | "legal_ops";
 
 export type QuizMode = "random" | "standard";
 
@@ -120,7 +120,7 @@ export interface Card {
   id: string;
   name: string;
   emoji: string;
-  type: "fire" | "water" | "grass" | "lightning" | "strawhat" | "marine" | "shadow" | "legendary" | "hero" | "squishy";
+  type: "fire" | "water" | "grass" | "lightning" | "strawhat" | "marine" | "shadow" | "legendary" | "hero" | "squishy" | "attacker" | "midfielder" | "defender" | "goalkeeper" | "legend" | "sorcerer" | "curse" | "domain" | "special_grade" | "network" | "star" | "powerup" | "boss" | "cosmic";
   rarity: "common" | "uncommon" | "rare" | "ultra_rare" | "secret_gold";
   hp: number;
   attackName: string;
@@ -128,9 +128,10 @@ export interface Card {
   ability?: string;
   description: string;
   evolvesFrom?: string;
-  set: "starter" | "monsters" | "crews" | "promo" | "mha" | "squishy";
+  set: "starter" | "monsters" | "crews" | "promo" | "mha" | "squishy" | "wc" | "jjk" | "op" | "rf" | "smg";
   /** Supabase Storage public URL for card artwork */
   imageUrl?: string;
+  releasedIn?: string;
 }
 
 export interface ChildTCG {

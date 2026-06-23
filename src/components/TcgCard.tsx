@@ -14,7 +14,10 @@ interface TcgCardProps {
   showBack?: boolean;
 }
 
-const TYPE_STYLES = {
+const TYPE_STYLES: Record<
+  string,
+  { bg: string; border: string; text: string; badge: string; icon: string }
+> = {
   fire: {
     bg: "from-orange-500 via-red-500 to-amber-600",
     border: "border-red-600",
@@ -84,6 +87,104 @@ const TYPE_STYLES = {
     text: "text-pink-50",
     badge: "bg-pink-500 text-white",
     icon: "🧸",
+  },
+  attacker: {
+    bg: "from-emerald-500 via-sky-500 to-lime-400",
+    border: "border-emerald-600",
+    text: "text-emerald-50",
+    badge: "bg-emerald-700 text-white",
+    icon: "⚽",
+  },
+  midfielder: {
+    bg: "from-blue-600 via-cyan-500 to-green-400",
+    border: "border-blue-700",
+    text: "text-blue-50",
+    badge: "bg-blue-800 text-white",
+    icon: "🎯",
+  },
+  defender: {
+    bg: "from-blue-700 via-slate-600 to-slate-800",
+    border: "border-slate-700",
+    text: "text-slate-100",
+    badge: "bg-slate-900 text-white",
+    icon: "🛡️",
+  },
+  goalkeeper: {
+    bg: "from-yellow-500 via-orange-500 to-red-600",
+    border: "border-orange-600",
+    text: "text-orange-100",
+    badge: "bg-orange-800 text-white",
+    icon: "🧤",
+  },
+  legend: {
+    bg: "from-amber-400 via-yellow-500 to-amber-600",
+    border: "border-amber-600",
+    text: "text-amber-950",
+    badge: "bg-amber-800 text-white",
+    icon: "🏆",
+  },
+  sorcerer: {
+    bg: "from-purple-600 via-indigo-700 to-indigo-900",
+    border: "border-indigo-800",
+    text: "text-indigo-100",
+    badge: "bg-indigo-950 text-indigo-100",
+    icon: "🔮",
+  },
+  curse: {
+    bg: "from-red-950 via-purple-900 to-black",
+    border: "border-red-900",
+    text: "text-red-100",
+    badge: "bg-red-950 text-red-100",
+    icon: "👹",
+  },
+  domain: {
+    bg: "from-indigo-950 via-slate-900 to-violet-950",
+    border: "border-violet-900",
+    text: "text-violet-100",
+    badge: "bg-violet-950 text-violet-100",
+    icon: "🌀",
+  },
+  special_grade: {
+    bg: "from-black via-slate-900 to-red-950",
+    border: "border-red-800",
+    text: "text-red-100",
+    badge: "bg-red-950 text-red-100",
+    icon: "✨",
+  },
+  network: {
+    bg: "from-emerald-600 via-teal-600 to-cyan-700",
+    border: "border-emerald-700",
+    text: "text-emerald-50",
+    badge: "bg-emerald-800 text-white",
+    icon: "📡",
+  },
+  star: {
+    bg: "from-yellow-300 via-amber-400 to-yellow-500",
+    border: "border-yellow-500",
+    text: "text-yellow-950",
+    badge: "bg-yellow-700 text-yellow-100",
+    icon: "🌟",
+  },
+  powerup: {
+    bg: "from-orange-400 via-red-500 to-pink-500",
+    border: "border-red-500",
+    text: "text-red-50",
+    badge: "bg-red-700 text-white",
+    icon: "🍄",
+  },
+  boss: {
+    bg: "from-red-800 via-slate-900 to-black",
+    border: "border-red-900",
+    text: "text-red-100",
+    badge: "bg-red-950 text-white",
+    icon: "👾",
+  },
+  cosmic: {
+    bg: "from-purple-900 via-indigo-900 to-blue-900",
+    border: "border-indigo-600",
+    text: "text-indigo-100",
+    badge: "bg-indigo-950 text-white",
+    icon: "🌌",
   },
 };
 

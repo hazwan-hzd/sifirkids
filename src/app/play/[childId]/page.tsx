@@ -8,7 +8,7 @@ import type { ChildId } from "@/lib/types";
 import { useApp } from "@/lib/store";
 import { PageShell, Loading, PointsBadge, BackButton, ProgressBar } from "@/components/ui";
 import { LockedModuleCard } from "@/components/LockedModuleCard";
-import { getModulesForChild } from "@/lib/moduleRegistry";
+import { getModulesForChild, getActiveModulesForChild } from "@/lib/moduleRegistry";
 import { cn } from "@/lib/utils";
 import { AvatarRenderer } from "@/components/AvatarRenderer";
 
@@ -65,6 +65,8 @@ export default function ChildHubPage({
       <p className="mb-6 text-center font-display text-2xl text-ink/80">What shall we play?</p>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        {/* Kid module cards — hidden for parent profiles */}
+        {id !== "papa" && (<>
         <Link
           href={`/play/${id}/multiplication`}
           role="button"
@@ -143,6 +145,42 @@ export default function ChildHubPage({
             Kuiz BM KSSR/KSSM — mengikut tahap umur
           </span>
         </Link>
+
+        {/* Fardu Ain (PAFA/KAFA) module — all children */}
+        <Link
+          href={`/play/${id}/pafa_kafa`}
+          role="button"
+          className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-grape-100 p-6"
+          style={{ animationDelay: "400ms" }}
+        >
+          <span className="text-6xl">🕌</span>
+          <span className="font-display text-2xl font-bold text-grape-600">
+            Fardu Ain (PAFA/KAFA)
+          </span>
+          <span className="text-sm text-ink/70">
+            Kuiz Perkara Asas Fardu Ain & Kurikulum KAFA
+          </span>
+        </Link>
+        </>)}
+
+        {/* Papa's business modules — dynamic from registry */}
+        {id === "papa" && getActiveModulesForChild("papa").map((m) => (
+          <Link
+            key={m.id}
+            href={`/play/${id}/${m.id}`}
+            role="button"
+            className={`btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-${m.accent}-100 p-6`}
+            style={{ animationDelay: `${m.animationDelay}ms` }}
+          >
+            <span className="text-6xl">{m.emoji}</span>
+            <span className={`font-display text-2xl font-bold text-${m.accent}-600`}>
+              {m.label}
+            </span>
+            <span className="text-sm text-ink/70">
+              {m.description}
+            </span>
+          </Link>
+        ))}
 
         {/* Locked / coming-soon modules — shaded out */}
         {getModulesForChild(id)

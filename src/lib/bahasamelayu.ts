@@ -17,6 +17,7 @@ const CHILD_LEVEL: Record<ChildId, BMLevel> = {
   ilyas: "t1",
   hafeeza: "t4",
   dhiya: "f3",
+  papa: "f3",
 };
 
 export function levelForChild(childId: ChildId): BMLevel {

@@ -35,6 +35,7 @@ import {
   MASTERY,
   POINTS,
   PROFILES,
+  ALL_PROFILES,
   getReward,
   CARDS,
   PACKS,
@@ -111,7 +112,7 @@ function defaultChild(profile: Profile): ChildData {
 
 function defaultState(): AppState {
   const children = {} as Record<ChildId, ChildData>;
-  for (const p of PROFILES) children[p.id] = defaultChild(p);
+  for (const p of ALL_PROFILES) children[p.id] = defaultChild(p);
   return { version: 2, children, parentPin: "3675", reminderTime: "18:00", pendingTrades: [] };
 }
 
@@ -183,7 +184,7 @@ function reconcile(raw: unknown): AppState {
   const rawVersion = saved.version ?? 1;
 
   if (saved.children) {
-    for (const p of PROFILES) {
+    for (const p of ALL_PROFILES) {
       const sc = saved.children[p.id];
       if (sc) {
         merged.children[p.id] = reconcileChildPoints({
@@ -351,7 +352,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setState((prev) => {
       const next = { ...prev, children: { ...prev.children } };
-      for (const p of PROFILES) {
+      for (const p of ALL_PROFILES) {
         const remote = sbData[p.id];
         if (!remote || remote.sessions.length === 0) continue;
         const local = next.children[p.id];
@@ -832,10 +833,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateChild(childId, (c) => {
         if (c.rewards.points < pack.cost) return c;
 
-        // Only pull from cards that have artwork (imageUrl set)
-        const candidates = CARDS.filter(
-          (card) => pack.allowedSets.includes(card.set) && !!card.imageUrl
-        );
+        // Only pull from cards that have artwork (imageUrl set) and match run release rules
+        const candidates = CARDS.filter((card) => {
+          const isAllowedSet = pack.allowedSets.includes(card.set);
+          const hasImage = !!card.imageUrl;
+          const cardRelease = card.releasedIn ?? "SK-01";
+
+          // Exclude new SK-02 cards if we are opening a pack from the SK-01 run shelf
+          if (runId === "RUN-SK01-01" && cardRelease !== "SK-01") {
+            return false;
+          }
+
+          return isAllowedSet && hasImage;
+        });
         if (candidates.length === 0) return c;
 
         // Pull random cards based on weights
