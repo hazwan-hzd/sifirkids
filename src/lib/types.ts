@@ -1,7 +1,7 @@
 // SifirKids data model. This is the shared contract for every feature module.
 // All persisted state lives under one AppState root in localStorage.
 
-export type ChildId = "hafeeza" | "dhiya" | "ilyas" | "papa";
+export type ChildId = "hafeeza" | "dhiya" | "ilyas" | "papa" | "mommy";
 
 export type ModuleId = "multiplication" | "arabic" | "sejarah" | "peribahasa" | "science" | "bahasa_melayu" | "pafa_kafa" | "ai_specs" | "integration_logic" | "legal_ops";
 

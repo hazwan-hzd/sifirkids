@@ -17,6 +17,7 @@ const CHILD_LEVEL: Record<ChildId, PafaKafaLevel> = {
   hafeeza: "t4",
   dhiya: "f3",
   papa: "f3",
+  mommy: "f3",
 };
 
 export function levelForChild(childId: ChildId): PafaKafaLevel {

@@ -7,9 +7,10 @@ export const PROFILES: Profile[] = [
   { id: "ilyas", name: "Ilyas", avatar: "🚀", color: "sky" },
 ];
 
-/** Parent profiles — shown below a separator on the home screen. */
+/** Parent profiles - standard cards on the home screen. */
 export const PARENT_PROFILES: Profile[] = [
-  { id: "papa", name: "Papa & Mommy", avatar: "👨\u200d👩\u200d👧\u200d👦", color: "grape" },
+  { id: "papa", name: "Papa", avatar: "👨‍💼", color: "grape" },
+  { id: "mommy", name: "Mommy", avatar: "👩‍💼", color: "coral" },
 ];
 
 export const ALL_PROFILES: Profile[] = [...PROFILES, ...PARENT_PROFILES];
@@ -157,6 +158,11 @@ export const CHILD_REWARDS: Record<ChildId, Reward[]> = {
     { id: "papa_coffee", name: "Premium Coffee", icon: "☕", cost: 10000 },
     { id: "papa_massage", name: "Massage Voucher", icon: "💆", cost: 50000 },
     { id: "papa_gadget", name: "Tech Gadget Fund", icon: "📱", cost: 200000 },
+  ],
+  mommy: [
+    { id: "mommy_spa", name: "Spa Day", icon: "🧖", cost: 15000 },
+    { id: "mommy_flowers", name: "Fresh Flowers", icon: "💐", cost: 30000 },
+    { id: "mommy_handbag", name: "Handbag Fund", icon: "👜", cost: 200000 },
   ],
 };
 

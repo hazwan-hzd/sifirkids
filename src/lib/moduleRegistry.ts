@@ -119,7 +119,7 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     description: "Context windows, pricing, RAG & model capabilities",
     status: "active",
     parentOnly: false,
-    children: ["papa"],
+    children: ["papa", "mommy"],
     animationDelay: 560,
   },
   {
@@ -130,7 +130,7 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     description: "Webhooks, Make.com, API errors & automation logic",
     status: "active",
     parentOnly: false,
-    children: ["papa"],
+    children: ["papa", "mommy"],
     animationDelay: 640,
   },
   {
@@ -141,7 +141,7 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     description: "Employment Act 1955, wages, leave & East Malaysia",
     status: "active",
     parentOnly: false,
-    children: ["papa"],
+    children: ["papa", "mommy"],
     animationDelay: 720,
   },
 ];

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CHILD_IDS, COLOR_CLASSES, TABLES, ARABIC_LETTERS } from "@/lib/data";
 import type { ChildId } from "@/lib/types";
+
+const PARENT_IDS = new Set<ChildId>(["papa", "mommy"]);
 import { useApp } from "@/lib/store";
 import { PageShell, Loading, PointsBadge, BackButton, ProgressBar } from "@/components/ui";
 import { LockedModuleCard } from "@/components/LockedModuleCard";
@@ -50,8 +52,8 @@ export default function ChildHubPage({
   const arabicMastered = ARABIC_LETTERS.filter((l) => child.arabic[l.id]?.mastered).length;
   const arabicPct = Math.round((arabicMastered / ARABIC_LETTERS.length) * 100);
 
-  // PIN gate for Papa & Mommy profile
-  if (id === "papa" && !papaUnlocked) {
+  // PIN gate for parent profiles
+  if (PARENT_IDS.has(id) && !papaUnlocked) {
     const submitPapaPin = (value: string) => {
       if (value === "2707") {
         setPapaUnlocked(true);
@@ -69,7 +71,7 @@ export default function ChildHubPage({
       <PageShell>
         <div className="mb-6 flex items-center justify-between gap-3">
           <BackButton href="/" />
-          <span className="font-display text-xl font-bold text-grape-600">Papa & Mommy</span>
+          <span className="font-display text-xl font-bold text-grape-600">{child.profile.name}</span>
           <div />
         </div>
         <div className={cn("mx-auto max-w-sm rounded-[var(--radius-blob)] bg-white p-8 text-center shadow-sm", papaPinError && "animate-[shake_0.4s]")}>
@@ -122,7 +124,7 @@ export default function ChildHubPage({
 
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Kid module cards — hidden for parent profiles */}
-        {id !== "papa" && (<>
+        {!PARENT_IDS.has(id) && (<>
         <Link
           href={`/play/${id}/multiplication`}
           role="button"
@@ -220,7 +222,7 @@ export default function ChildHubPage({
         </>)}
 
         {/* Papa's business modules — dynamic from registry */}
-        {id === "papa" && getActiveModulesForChild("papa").map((m) => (
+        {PARENT_IDS.has(id) && getActiveModulesForChild(id).map((m) => (
           <Link
             key={m.id}
             href={`/play/${id}/${m.id}`}
@@ -247,7 +249,7 @@ export default function ChildHubPage({
       </div>
 
       {/* Bottom nav — hidden for papa (adults don't need TCG/Avatar/Rewards) */}
-      {id !== "papa" && (
+      {!PARENT_IDS.has(id) && (
       <div className="mt-6 grid grid-cols-5 gap-1.5">
         <Link
           href={`/play/${id}/tcg`}

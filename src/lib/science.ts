@@ -18,6 +18,7 @@ const CHILD_LEVEL: Record<ChildId, ScienceLevel> = {
   hafeeza: "t4",
   dhiya: "f3",
   papa: "f3",
+  mommy: "f3",
 };
 
 export function levelForChild(childId: ChildId): ScienceLevel {
