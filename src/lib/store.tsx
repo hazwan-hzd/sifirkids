@@ -172,7 +172,7 @@ function reconcileChildPoints(c: ChildData): ChildData {
     .reduce((sum, cl) => sum + cl.cost, 0);
   const points = Math.max(0, totalEarned - claimsCost);
 
-  return {
+  let result: ChildData = {
     ...c,
     sessions,
     daily,
@@ -188,6 +188,15 @@ function reconcileChildPoints(c: ChildData): ChildData {
       openedPacksCount: 0,
     },
   };
+
+  // Remove cards with no artwork from Papa's collection (promo-gojo-03 has no image)
+  if (result.profile.id === "papa" && result.tcg?.collection?.["promo-gojo-03"]) {
+    const col = { ...result.tcg.collection };
+    delete col["promo-gojo-03"];
+    result = { ...result, tcg: { ...result.tcg, collection: col } };
+  }
+
+  return result;
 }
 
 /** Merge persisted state onto defaults so new fields never crash old saves. */

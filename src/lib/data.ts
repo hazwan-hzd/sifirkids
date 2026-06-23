@@ -134,9 +134,9 @@ export const CHILD_REWARDS: Record<ChildId, Reward[]> = {
     { id: "ilyas_roblox_sticker", name: "Roblox Avatar Sticker Pack", icon: "🎟️", cost: 5000 },
     { id: "ilyas_football_kickabout", name: "Extra Football Practice", icon: "⚽", cost: 15000 },
     { id: "ilyas_robux_starter", name: "Roblox Starter Pack (400 Robux)", icon: "🪙", cost: 40000 },
-    { id: "ilyas_football_socks", name: "Pro Football Grip Socks", icon: "🧦", cost: 75000 },
+    { id: "ilyas_football_socks", name: "Nike Football Boots", icon: "👟", cost: 75000 },
     { id: "ilyas_robux_mega", name: "Roblox Mega Pack (800 Robux)", icon: "💎", cost: 100000 },
-    { id: "ilyas_football_jersey", name: "Custom Football Jersey", icon: "👕", cost: 250000 },
+    { id: "ilyas_football_jersey", name: "Custom Football Jersey", icon: "👕", cost: 50000 },
   ],
   dhiya: [
     { id: "dhiya_kawaii_stickers", name: "Kawaii Pink Unicorn Sticker Sheet", icon: "🦄", cost: 5000 },
