@@ -96,9 +96,31 @@ body {
 }
 .animate-pop { animation: pop-in 0.25s ease both; }
 
+/* Pack opening: tear flash + reward particles */
+@keyframes pk-flash {
+  0% { opacity: 0; }
+  20% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+.pk-flash { animation: pk-flash 0.45s ease-out both; }
+
+.pk-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 40;
+  will-change: transform, opacity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-rise, .animate-pop { animation: none; }
   .btn-pop { transition: none; }
+  .pk-flash { animation: none; opacity: 0; }
 }
 
 /* All interactive targets meet 44px min */
