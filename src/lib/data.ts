@@ -481,6 +481,7 @@ export const CARDS: Card[] = [
     attackDmg: 85,
     description: "The strongest creature alive. A massive sea dragon that commands lightning.",
     set: "crews",
+    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-13.png",
   },
   {
     id: "crews-08",
@@ -493,6 +494,7 @@ export const CARDS: Card[] = [
     attackDmg: 95,
     description: "One of the Four Emperors. Inspires the next generation of pirates.",
     set: "crews",
+    imageUrl: "https://kwxieclufgfrqakzktmr.supabase.co/storage/v1/object/public/tcg-cards/poke-14.png",
   },
 
   // --- Promo / Mastery Set ---
