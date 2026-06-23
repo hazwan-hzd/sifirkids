@@ -134,6 +134,21 @@ function reconcileChildPoints(c: ChildData): ChildData {
     return s;
   });
 
+  // One-time refund: inject a credit session for Papa (3x1500 bugged starter packs, 2026-06-23)
+  const REFUND_ID = "refund-papa-sk-bug-20260623";
+  if (c.profile.id === "papa" && !sessions.some((s) => s.id === REFUND_ID)) {
+    sessions.push({
+      id: REFUND_ID,
+      module: "multiplication" as const,
+      topic: "refund",
+      total: 0,
+      correct: 0,
+      durationSec: 0,
+      pointsEarned: 4500,
+      date: "2026-06-23T16:00:00.000Z",
+    });
+  }
+
   // Re-calculate daily history points for the bugged date: 2026-06-22
   const daily = { ...c.daily, history: { ...c.daily.history } };
   const targetDay = "2026-06-22";
@@ -155,12 +170,7 @@ function reconcileChildPoints(c: ChildData): ChildData {
   const claimsCost = c.rewards.claims
     .filter((cl) => cl.status === "approved" || cl.status === "pending")
     .reduce((sum, cl) => sum + cl.cost, 0);
-
-  // One-time refund credits (pack purchases during bugs)
-  // Papa: 3x starter (1500 each) during SK extraction bug 2026-06-23
-  const refundCredit = c.profile.id === "papa" ? 4500 : 0;
-
-  const points = Math.max(0, totalEarned - claimsCost + refundCredit);
+  const points = Math.max(0, totalEarned - claimsCost);
 
   return {
     ...c,
