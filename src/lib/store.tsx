@@ -112,7 +112,7 @@ function defaultChild(profile: Profile): ChildData {
 function defaultState(): AppState {
   const children = {} as Record<ChildId, ChildData>;
   for (const p of PROFILES) children[p.id] = defaultChild(p);
-  return { version: 1, children, parentPin: "3675", reminderTime: "18:00", pendingTrades: [] };
+  return { version: 2, children, parentPin: "3675", reminderTime: "18:00", pendingTrades: [] };
 }
 
 function reconcileChildPoints(c: ChildData): ChildData {
@@ -180,6 +180,8 @@ function reconcile(raw: unknown): AppState {
   if (!raw || typeof raw !== "object") return base;
   const saved = raw as Partial<AppState>;
   const merged = { ...base, ...saved, children: { ...base.children }, pendingTrades: saved.pendingTrades ?? [] };
+  const rawVersion = saved.version ?? 1;
+
   if (saved.children) {
     for (const p of PROFILES) {
       const sc = saved.children[p.id];
@@ -195,7 +197,7 @@ function reconcile(raw: unknown): AppState {
           arabic: { ...sc.arabic },
           sessions: sc.sessions ?? [],
           avatar: sc.avatar ?? defaultAvatar(),
-          tcg: sc.tcg ?? defaultChild(p).tcg,
+          tcg: rawVersion < 2 ? defaultChild(p).tcg : (sc.tcg ?? defaultChild(p).tcg),
         });
       }
     }

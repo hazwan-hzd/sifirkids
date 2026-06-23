@@ -22,6 +22,7 @@ export default function TcgBinderPage({
   const [filterType, setFilterType] = useState<string>("all");
   const [filterRarity, setFilterRarity] = useState<string>("all");
   const [filterOwned, setFilterOwned] = useState<"all" | "owned" | "unowned">("all");
+  const [sortBy, setSortBy] = useState<"default" | "series" | "name">("default");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   if (!hydrated) {
@@ -46,6 +47,29 @@ export default function TcgBinderPage({
     if (filterOwned === "owned" && !isOwned) return false;
     if (filterOwned === "unowned" && isOwned) return false;
     return true;
+  });
+
+  const SERIES_NAMES: Record<string, string> = {
+    starter: "Series 1: Pokemon x One Piece Hybrid (Starter)",
+    monsters: "Series 1: Pokemon x One Piece Hybrid (Monsters)",
+    crews: "Series 2: One Piece Crews",
+    mha: "Series 3: My Hero Academia",
+    jjk: "Series 4: Jujutsu Kaisen",
+    fifa: "Series 5: FIFA Football",
+    net: "Series 6: Cybersecurity",
+    squishy: "Series 7: Squishy Squad",
+  };
+
+  const sortedCards = [...filteredCards].sort((a, b) => {
+    if (sortBy === "series") {
+      const nameA = SERIES_NAMES[a.set] ?? "Unknown Series";
+      const nameB = SERIES_NAMES[b.set] ?? "Unknown Series";
+      return nameA.localeCompare(nameB);
+    }
+    if (sortBy === "name") {
+      return a.name.localeCompare(b.name);
+    }
+    return 0;
   });
 
   const handleSelectCard = (card: Card) => {
@@ -140,16 +164,30 @@ export default function TcgBinderPage({
               <option value="unowned">Locked Only</option>
             </select>
           </div>
+
+          {/* Sort By */}
+          <div className="flex flex-col gap-1 text-left">
+            <span className="font-bold text-slate-500">Sort By</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-slate-100 border-2 border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 outline-none"
+            >
+              <option value="default">Default</option>
+              <option value="series">Series Name</option>
+              <option value="name">Card Name</option>
+            </select>
+          </div>
         </div>
 
         <div className="font-semibold text-slate-500 mt-2 sm:mt-0">
-          Showing {filteredCards.length} cards
+          Showing {sortedCards.length} cards
         </div>
       </div>
 
       {/* Binder Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {filteredCards.map((card) => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-center">
+        {sortedCards.map((card) => {
           const qty = tcg.collection[card.id] ?? 0;
           const isOwned = qty > 0;
           const isCurrentBuddy = tcg.activeBuddyId === card.id;
@@ -184,7 +222,7 @@ export default function TcgBinderPage({
       </div>
 
       {/* Empty State */}
-      {filteredCards.length === 0 && (
+      {sortedCards.length === 0 && (
         <div className="bg-white/50 rounded-3xl p-12 text-center border-2 border-dashed border-slate-200">
           <span className="text-5xl">🔍</span>
           <h3 className="font-display font-bold text-slate-500 mt-3">No matching cards found</h3>
