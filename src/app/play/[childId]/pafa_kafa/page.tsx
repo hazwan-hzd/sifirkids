@@ -174,8 +174,14 @@ export default function PafaKafaPage({
   const submitAnswer = useCallback(() => {
     if (!selectedAnswer || showExplanation) return;
     const q = questions[currentIdx];
-    const isCorrect =
-      selectedAnswer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
+    // Normalize Benar/Salah ↔ true/false for true_false questions
+    const normalize = (val: string) => {
+      const lower = val.trim().toLowerCase();
+      if (lower === "benar") return "true";
+      if (lower === "salah") return "false";
+      return lower;
+    };
+    const isCorrect = normalize(selectedAnswer) === normalize(q.correct_answer);
     const responseTimeMs = Date.now() - questionStartRef.current;
 
     setAnswers((prev) => [
@@ -420,10 +426,25 @@ export default function PafaKafaPage({
         {/* Question Inputs */}
         <div className="grid gap-3 mb-6">
           {/* MCQ / True-False Mode */}
-          {q.question_type !== "fill_blank" && q.options && (
-            q.options.map((opt) => {
+          {q.question_type !== "fill_blank" && (() => {
+            // For true_false with null options, provide fallback Benar/Salah
+            const displayOptions = q.options && q.options.length > 0
+              ? q.options
+              : q.question_type === "true_false"
+              ? ["Benar", "Salah"]
+              : [];
+            // Map display text to the DB correct_answer value for comparison
+            // DB stores "true"/"false" for true_false, but display shows "Benar"/"Salah"
+            const normalizeAnswer = (val: string) => {
+              const lower = val.trim().toLowerCase();
+              if (lower === "benar" || lower === "true") return "true";
+              if (lower === "salah" || lower === "false") return "false";
+              return lower;
+            };
+
+            return displayOptions.map((opt) => {
               const isSelected = selectedAnswer === opt;
-              const isCorrectOpt = opt.toLowerCase() === q.correct_answer.toLowerCase();
+              const isCorrectOpt = normalizeAnswer(opt) === normalizeAnswer(q.correct_answer);
 
               let btnStyle = "bg-white border-ink/10 text-ink hover:bg-ink/5";
               if (isSelected) {
@@ -454,8 +475,8 @@ export default function PafaKafaPage({
                   {showExplanation && isSelected && !isCorrectOpt && <span>❌</span>}
                 </button>
               );
-            })
-          )}
+            });
+          })()}
 
           {/* Fill-in-the-Blank Mode */}
           {q.question_type === "fill_blank" && (
