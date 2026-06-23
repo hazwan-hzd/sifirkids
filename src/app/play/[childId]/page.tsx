@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CHILD_IDS, COLOR_CLASSES, TABLES, ARABIC_LETTERS } from "@/lib/data";
@@ -23,6 +23,9 @@ export default function ChildHubPage({
 
   const { state, hydrated, recordOpen } = useApp();
   const opened = useRef(false);
+  const [papaUnlocked, setPapaUnlocked] = useState(false);
+  const [papaPin, setPapaPin] = useState("");
+  const [papaPinError, setPapaPinError] = useState(false);
 
   useEffect(() => {
     if (hydrated && !opened.current) {
@@ -46,6 +49,59 @@ export default function ChildHubPage({
   const mathPct = Math.round((mathMastered / TABLES.length) * 100);
   const arabicMastered = ARABIC_LETTERS.filter((l) => child.arabic[l.id]?.mastered).length;
   const arabicPct = Math.round((arabicMastered / ARABIC_LETTERS.length) * 100);
+
+  // PIN gate for Papa & Mommy profile
+  if (id === "papa" && !papaUnlocked) {
+    const submitPapaPin = (value: string) => {
+      if (value === "2707") {
+        setPapaUnlocked(true);
+      } else {
+        setPapaPinError(true);
+        setPapaPin("");
+        setTimeout(() => setPapaPinError(false), 600);
+      }
+    };
+    const pressDigit = (d: string) => {
+      if (papaPin.length >= 6) return;
+      setPapaPin(papaPin + d);
+    };
+    return (
+      <PageShell>
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <BackButton href="/" />
+          <span className="font-display text-xl font-bold text-grape-600">Papa & Mommy</span>
+          <div />
+        </div>
+        <div className={cn("mx-auto max-w-sm rounded-[var(--radius-blob)] bg-white p-8 text-center shadow-sm", papaPinError && "animate-[shake_0.4s]")}>
+          <div className="mb-2 text-5xl">🔒</div>
+          <h2 className="font-display text-2xl font-bold text-grape-600">Adults Only</h2>
+          <p className="mb-4 text-sm text-ink/60">Enter PIN to continue</p>
+          <div className="mb-5 flex justify-center gap-2">
+            {Array.from({ length: Math.max(4, papaPin.length) }).map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "h-4 w-4 rounded-full border-2 border-grape-400",
+                  i < papaPin.length && "bg-grape-500",
+                  papaPinError && "border-coral-500",
+                )}
+              />
+            ))}
+          </div>
+          <div className="mx-auto grid max-w-[15rem] grid-cols-3 gap-3">
+            {["1","2","3","4","5","6","7","8","9"].map((d) => (
+              <button key={d} onClick={() => pressDigit(d)} className="tap btn-pop h-14 rounded-2xl bg-cream font-display text-2xl font-bold text-ink">{d}</button>
+            ))}
+            <button onClick={() => setPapaPin(papaPin.slice(0, -1))} className="tap h-14 rounded-2xl font-display text-xl text-ink/60" aria-label="Delete">⌫</button>
+            <button onClick={() => pressDigit("0")} className="tap btn-pop h-14 rounded-2xl bg-cream font-display text-2xl font-bold text-ink">0</button>
+            <button onClick={() => submitPapaPin(papaPin)} className="tap btn-pop h-14 rounded-2xl bg-grape-500 font-display text-xl font-bold text-white" aria-label="Enter">✓</button>
+          </div>
+          {papaPinError && <p className="mt-3 font-display text-coral-600">Wrong PIN, try again</p>}
+          <style>{`@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}`}</style>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -190,6 +246,8 @@ export default function ChildHubPage({
           ))}
       </div>
 
+      {/* Bottom nav — hidden for papa (adults don't need TCG/Avatar/Rewards) */}
+      {id !== "papa" && (
       <div className="mt-6 grid grid-cols-5 gap-1.5">
         <Link
           href={`/play/${id}/tcg`}
@@ -230,6 +288,7 @@ export default function ChildHubPage({
           </span>
         </div>
       </div>
+      )}
     </PageShell>
   );
 }
