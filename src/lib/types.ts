@@ -120,7 +120,7 @@ export interface Card {
   id: string;
   name: string;
   emoji: string;
-  type: "fire" | "water" | "grass" | "lightning" | "strawhat" | "marine" | "shadow" | "legendary";
+  type: "fire" | "water" | "grass" | "lightning" | "strawhat" | "marine" | "shadow" | "legendary" | "hero" | "squishy";
   rarity: "common" | "uncommon" | "rare" | "ultra_rare" | "secret_gold";
   hp: number;
   attackName: string;
@@ -128,7 +128,9 @@ export interface Card {
   ability?: string;
   description: string;
   evolvesFrom?: string;
-  set: "starter" | "monsters" | "crews" | "promo";
+  set: "starter" | "monsters" | "crews" | "promo" | "mha" | "squishy";
+  /** Supabase Storage public URL for card artwork */
+  imageUrl?: string;
 }
 
 export interface ChildTCG {
@@ -176,4 +178,3 @@ export interface AppState {
   /** global trade requests queue */
   pendingTrades?: TradeRequest[];
 }
-

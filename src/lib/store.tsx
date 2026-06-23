@@ -45,6 +45,23 @@ import { useSupabaseData, type SupabaseChildData } from "./supabase-read";
 
 const STORAGE_KEY = "sifirkids:v1";
 const MAX_SESSIONS = 200; // cap per child to keep storage small
+const ALT_ART_PULL_WEIGHT = 0.2;
+
+function isAltArtCard(card: Card): boolean {
+  return /\balt\b/i.test(card.id.replace(/[-_]+/g, " "));
+}
+
+function drawWeightedCard(pool: Card[]): Card {
+  const totalWeight = pool.reduce((sum, card) => sum + (isAltArtCard(card) ? ALT_ART_PULL_WEIGHT : 1), 0);
+  let roll = Math.random() * totalWeight;
+
+  for (const card of pool) {
+    roll -= isAltArtCard(card) ? ALT_ART_PULL_WEIGHT : 1;
+    if (roll <= 0) return card;
+  }
+
+  return pool[pool.length - 1];
+}
 
 /* ----------------------------- defaults ----------------------------- */
 
@@ -267,7 +284,7 @@ interface AppContextValue {
   resetChild: (childId: ChildId) => void;
   saveAvatar: (childId: ChildId, look: ChildAvatar) => void;
   unlockAvatarItem: (childId: ChildId, itemId: string, cost: number) => boolean;
-  buyBoosterPack: (childId: ChildId, packId: string) => Card[] | null;
+  buyBoosterPack: (childId: ChildId, packId: string, runId?: string) => Card[] | null;
   setTcgBuddy: (childId: ChildId, cardId: string | null) => void;
   setTcgDeck: (childId: ChildId, cardIds: string[]) => void;
   createTradeRequest: (fromChildId: ChildId, toChildId: ChildId, offeredCardId: string, requestedCardId: string) => void;
@@ -804,7 +821,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const buyBoosterPack = useCallback(
-    (childId: ChildId, packId: string): Card[] | null => {
+    (childId: ChildId, packId: string, runId?: string): Card[] | null => {
       const pack = PACKS.find((p) => p.id === packId);
       if (!pack) return null;
 
@@ -813,8 +830,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateChild(childId, (c) => {
         if (c.rewards.points < pack.cost) return c;
 
-        // Determine candidate cards for this pack
-        const candidates = CARDS.filter((card) => pack.allowedSets.includes(card.set));
+        // Only pull from cards that have artwork (imageUrl set)
+        const candidates = CARDS.filter(
+          (card) => pack.allowedSets.includes(card.set) && !!card.imageUrl
+        );
         if (candidates.length === 0) return c;
 
         // Pull random cards based on weights
@@ -835,14 +854,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             targetRarity = "common";
           }
 
-          let pool = candidates.filter((card) => card.rarity === targetRarity);
+          // 80% Squishy / 20% other sets logic for Squishy Squad Pack
+          let poolCandidates = candidates;
+          if (pack.id === "pack-squishy") {
+            const isSquishyPull = Math.random() < 0.8;
+            if (isSquishyPull) {
+              poolCandidates = candidates.filter((card) => card.set === "squishy");
+            } else {
+              poolCandidates = CARDS.filter(
+                (card) => card.set !== "squishy" && !!card.imageUrl
+              );
+            }
+          }
+
+          let pool = poolCandidates.filter((card) => card.rarity === targetRarity);
           if (pool.length === 0) {
-            pool = candidates.filter((card) => card.rarity === "common");
+            pool = poolCandidates.filter((card) => card.rarity === "common");
           }
           if (pool.length === 0) {
-            pool = candidates; // absolute fallback
+            pool = poolCandidates; // absolute fallback
           }
-          return pool[Math.floor(Math.random() * pool.length)];
+          return drawWeightedCard(pool);
         };
 
         pulledCards = Array.from({ length: pack.cardCount }, () => drawCard());
@@ -865,6 +897,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             .from("child_profiles")
             .upsert({ id: childId, tcg: nextTcg, updated_at: new Date().toISOString() })
             .then();
+        }
+
+        // Log pull to run tracking (fire-and-forget)
+        if (runId && pulledCards.length > 0) {
+          import("./tcg-runs").then(({ logPullAndDecrement }) => {
+            logPullAndDecrement(runId, packId, childId, pulledCards).catch(
+              (err) => console.error("Failed to log pull:", err)
+            );
+          });
         }
 
         return {
@@ -1094,7 +1135,7 @@ export function useChild(childId: ChildId) {
     setDailyGoal: (g: number) => app.setDailyGoal(childId, g),
     saveAvatar: (look: ChildAvatar) => app.saveAvatar(childId, look),
     unlockAvatarItem: (itemId: string, cost: number) => app.unlockAvatarItem(childId, itemId, cost),
-    buyBoosterPack: (packId: string) => app.buyBoosterPack(childId, packId),
+    buyBoosterPack: (packId: string, runId?: string) => app.buyBoosterPack(childId, packId, runId),
     setTcgBuddy: (cardId: string | null) => app.setTcgBuddy(childId, cardId),
     setTcgDeck: (cardIds: string[]) => app.setTcgDeck(childId, cardIds),
     createTradeRequest: (toChildId: ChildId, offeredCardId: string, requestedCardId: string) =>

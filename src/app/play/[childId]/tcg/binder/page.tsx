@@ -106,6 +106,7 @@ export default function TcgBinderPage({
               <option value="marine">⚓ Marine</option>
               <option value="shadow">👁️ Shadow</option>
               <option value="legendary">👑 Legendary</option>
+              <option value="squishy">🧸 Squishy</option>
             </select>
           </div>
 

@@ -71,6 +71,20 @@ const TYPE_STYLES = {
     badge: "bg-pink-700 text-pink-100",
     icon: "👑",
   },
+  hero: {
+    bg: "from-blue-600 via-red-500 to-yellow-400",
+    border: "border-blue-700",
+    text: "text-blue-50",
+    badge: "bg-blue-800 text-yellow-100",
+    icon: "🦸",
+  },
+  squishy: {
+    bg: "from-pink-300 via-rose-300 to-fuchsia-400",
+    border: "border-pink-400",
+    text: "text-pink-50",
+    badge: "bg-pink-500 text-white",
+    icon: "🧸",
+  },
 };
 
 const RARITY_STYLES = {
@@ -141,41 +155,78 @@ export function TcgCard({
     lg: "w-80 h-[480px] text-sm",
   };
 
-  if (showBack || isLocked) {
+  if (showBack) {
     return (
       <div
         className={cn(
           "relative select-none rounded-[16px] border-4 border-slate-700 bg-slate-800 text-white flex flex-col items-center justify-center shadow-md",
           sizeClasses[size],
-          isLocked && "opacity-60 saturate-50 cursor-not-allowed",
-          onClick && !isLocked && "cursor-pointer active:scale-95 transition-transform",
+          onClick && "cursor-pointer active:scale-95 transition-transform",
           className
         )}
-        onClick={isLocked ? undefined : onClick}
+        onClick={onClick}
       >
-        {isLocked ? (
-          <div className="flex flex-col items-center gap-2 p-4 text-center">
-            <span className="text-4xl filter grayscale">🔒</span>
-            <span className="font-display font-bold text-slate-400">Locked</span>
-            <p className="text-[10px] text-slate-500 font-medium">Earn points & open packs to collect this card!</p>
-          </div>
-        ) : (
-          <div className="w-full h-full p-4 rounded-[12px] bg-gradient-to-br from-indigo-900 via-sky-900 to-indigo-950 flex flex-col items-center justify-between border-2 border-indigo-400 relative overflow-hidden">
-            {/* Card Back Logo design */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.15)_0%,transparent_70%)]" />
-            <div className="absolute -top-12 -left-12 w-24 h-24 rounded-full bg-sky-500/10 blur-xl" />
-            <div className="absolute -bottom-12 -right-12 w-24 h-24 rounded-full bg-indigo-500/10 blur-xl" />
+        <div className="w-full h-full p-4 rounded-[12px] bg-gradient-to-br from-indigo-900 via-sky-900 to-indigo-950 flex flex-col items-center justify-between border-2 border-indigo-400 relative overflow-hidden">
+          {/* Card Back Logo design */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.15)_0%,transparent_70%)]" />
+          <div className="absolute -top-12 -left-12 w-24 h-24 rounded-full bg-sky-500/10 blur-xl" />
+          <div className="absolute -bottom-12 -right-12 w-24 h-24 rounded-full bg-indigo-500/10 blur-xl" />
 
-            <div className="text-lg font-bold font-display text-sky-300 tracking-wider">SIFIRDEX</div>
-            <div className="w-20 h-20 rounded-full border-4 border-amber-400 flex items-center justify-center bg-indigo-950/80 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-              <span className="text-4xl animate-bounce">🃏</span>
-            </div>
-            <div className="text-center">
-              <div className="text-xs font-semibold text-amber-400">CREW & MONSTERS</div>
-              <div className="text-[9px] text-sky-400/80">Trading Card Game</div>
-            </div>
+          <div className="text-lg font-bold font-display text-sky-300 tracking-wider">SIFIRDEX</div>
+          <div className="w-20 h-20 rounded-full border-4 border-amber-400 flex items-center justify-center bg-indigo-950/80 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+            <span className="text-4xl animate-bounce">🃏</span>
           </div>
+          <div className="text-center">
+            <div className="text-xs font-semibold text-amber-400">CREW & MONSTERS</div>
+            <div className="text-[9px] text-sky-400/80">Trading Card Game</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Locked cards with artwork: show greyed-out preview of actual card
+  if (isLocked && card.imageUrl) {
+    return (
+      <div
+        className={cn(
+          "relative select-none rounded-[16px] border-4 border-slate-600 overflow-hidden shadow-md cursor-pointer",
+          sizeClasses[size],
+          className
         )}
+        onClick={onClick}
+      >
+        {/* Greyed-out card image */}
+        <img
+          src={card.imageUrl}
+          alt={card.name}
+          className="w-full h-full object-cover grayscale opacity-40"
+        />
+        {/* Lock overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/40">
+          <span className="text-3xl drop-shadow-lg">🔒</span>
+          <span className="font-display font-bold text-white/80 text-xs mt-1 drop-shadow">Locked</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Locked cards without artwork: generic lock display
+  if (isLocked) {
+    return (
+      <div
+        className={cn(
+          "relative select-none rounded-[16px] border-4 border-slate-700 bg-slate-800 text-white flex flex-col items-center justify-center shadow-md opacity-60 saturate-50 cursor-pointer",
+          sizeClasses[size],
+          className
+        )}
+        onClick={onClick}
+      >
+        <div className="flex flex-col items-center gap-2 p-4 text-center">
+          <span className="text-4xl filter grayscale">🔒</span>
+          <span className="font-display font-bold text-slate-400">Locked</span>
+          <p className="text-[10px] text-slate-500 font-medium">Earn points & open packs to collect this card!</p>
+        </div>
       </div>
     );
   }
@@ -239,7 +290,7 @@ export function TcgCard({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_80%)]" />
         {!imageError ? (
           <img
-            src={`/cards/${card.id}.png`}
+            src={card.imageUrl || `/cards/${card.id}.png`}
             alt={card.name}
             onError={() => setImageError(true)}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform"

@@ -1,13 +1,19 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
-import { CHILD_IDS, PACKS, type PackConfig } from "@/lib/data";
+import { CHILD_IDS, PACKS, CARDS, type PackConfig } from "@/lib/data";
 import type { ChildId, Card } from "@/lib/types";
 import { useApp } from "@/lib/store";
 import { PageShell, Loading, PointsBadge, BackButton } from "@/components/ui";
 import { PackOpening } from "@/components/PackOpening";
 import { cn } from "@/lib/utils";
+import {
+  getActiveRun,
+  getPackSupply,
+  type TcgRun,
+  type PackSupply,
+} from "@/lib/tcg-runs";
 
 export default function TcgShopPage({
   params,
@@ -23,6 +29,33 @@ export default function TcgShopPage({
   const [pulledCards, setPulledCards] = useState<Card[] | null>(null);
   const [isBuying, setIsBuying] = useState(false);
 
+  // Run tracking state
+  const [activeRun, setActiveRun] = useState<TcgRun | null>(null);
+  const [supply, setSupply] = useState<PackSupply[]>([]);
+  const [supplyLoaded, setSupplyLoaded] = useState(false);
+
+  // Fetch active run and pack supply on mount
+  useEffect(() => {
+    async function loadRun() {
+      const run = await getActiveRun();
+      setActiveRun(run);
+      if (run) {
+        const s = await getPackSupply(run.id);
+        setSupply(s);
+      }
+      setSupplyLoaded(true);
+    }
+    loadRun();
+  }, []);
+
+  // Refresh supply after a pack opening closes
+  const refreshSupply = async () => {
+    if (activeRun) {
+      const s = await getPackSupply(activeRun.id);
+      setSupply(s);
+    }
+  };
+
   if (!hydrated) {
     return (
       <PageShell>
@@ -33,16 +66,34 @@ export default function TcgShopPage({
 
   const child = state.children[id];
 
+  // Filter packs: only show packs that have cards with images in their pool
+  const availablePacks = PACKS.filter((pack) => {
+    const hasImageCards = CARDS.some(
+      (card) => pack.allowedSets.includes(card.set) && !!card.imageUrl
+    );
+    return hasImageCards;
+  });
+
+  const getSupplyForPack = (packId: string): PackSupply | undefined => {
+    return supply.find((s) => s.pack_type === packId);
+  };
+
   const handleBuyPack = (pack: PackConfig) => {
+    const packSupply = getSupplyForPack(pack.id);
+    if (packSupply && packSupply.remaining <= 0) {
+      alert("This pack is SOLD OUT for the current run!");
+      return;
+    }
     if (child.rewards.points < pack.cost) {
-      alert("Not enough points! Practice more times tables or Arabic letters to earn points.");
+      alert(
+        "Not enough points! Practice more times tables or Arabic letters to earn points."
+      );
       return;
     }
 
     setIsBuying(true);
-    // Add small delay to simulate purchasing feel
     setTimeout(() => {
-      const cards = buyBoosterPack(id, pack.id);
+      const cards = buyBoosterPack(id, pack.id, activeRun?.id);
       if (cards) {
         setOpeningPack(pack);
         setPulledCards(cards);
@@ -56,6 +107,7 @@ export default function TcgShopPage({
   const handleCloseOpening = () => {
     setOpeningPack(null);
     setPulledCards(null);
+    refreshSupply();
   };
 
   return (
@@ -71,19 +123,78 @@ export default function TcgShopPage({
         </div>
       )}
 
+      {/* Run Banner */}
+      {!openingPack && activeRun && (
+        <div className="mb-5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-lg">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+              Active Print Run
+            </span>
+            <span className="font-display font-bold text-sm">
+              {activeRun.id}
+            </span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] opacity-80">
+              {activeRun.name}
+            </span>
+            <span className="text-xs font-bold">
+              {supply.reduce((sum, s) => sum + s.remaining, 0)} packs remaining
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Packs Listing */}
       {!openingPack && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
-          {PACKS.map((pack) => {
+          {availablePacks.map((pack) => {
             const canAfford = child.rewards.points >= pack.cost;
+            const packSupply = getSupplyForPack(pack.id);
+            const isSoldOut = packSupply
+              ? packSupply.remaining <= 0
+              : false;
+            const isDisabled = isSoldOut || !canAfford;
+
             return (
               <div
                 key={pack.id}
                 className={cn(
                   "bg-white rounded-3xl p-5 border-2 border-black/5 shadow-md flex flex-col justify-between relative overflow-hidden transition-all duration-300",
-                  canAfford ? "hover:shadow-xl hover:border-slate-200" : "opacity-75"
+                  isSoldOut
+                    ? "opacity-50 grayscale"
+                    : canAfford
+                    ? "hover:shadow-xl hover:border-slate-200"
+                    : "opacity-75"
                 )}
               >
+                {/* Sold Out Overlay */}
+                {isSoldOut && (
+                  <div className="absolute inset-0 bg-slate-900/20 z-20 flex items-center justify-center rounded-3xl">
+                    <span className="bg-red-600 text-white font-display font-black text-lg px-6 py-2 rounded-full -rotate-12 shadow-xl border-2 border-white">
+                      SOLD OUT
+                    </span>
+                  </div>
+                )}
+
+                {/* Supply Badge */}
+                {packSupply && !isSoldOut && (
+                  <div className="absolute top-3 right-3 z-10">
+                    <span
+                      className={cn(
+                        "font-display font-bold text-[11px] px-2.5 py-1 rounded-full shadow-sm border",
+                        packSupply.remaining <= 5
+                          ? "bg-red-100 text-red-700 border-red-200 animate-pulse"
+                          : packSupply.remaining <= 10
+                          ? "bg-amber-100 text-amber-700 border-amber-200"
+                          : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                      )}
+                    >
+                      {packSupply.remaining}/{packSupply.total_supply}
+                    </span>
+                  </div>
+                )}
+
                 {/* Visual Pack Wrapper Graphic */}
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-20 bg-gradient-to-br from-indigo-500 via-sky-400 to-indigo-600 rounded-xl flex items-center justify-center border border-sky-300 shadow-md relative overflow-hidden">
@@ -96,7 +207,9 @@ export default function TcgShopPage({
                     <h2 className="font-display text-lg font-bold text-slate-800 leading-tight">
                       {pack.name}
                     </h2>
-                    <span className="text-xs text-slate-400 mt-0.5">Booster Pack</span>
+                    <span className="text-xs text-slate-400 mt-0.5">
+                      Booster Pack
+                    </span>
                   </div>
                 </div>
 
@@ -106,18 +219,24 @@ export default function TcgShopPage({
 
                 {/* Rarity Pull Rates (Probabilities) */}
                 <div className="bg-slate-50 border border-slate-100 rounded-2xl p-2.5 mb-5 text-[10px] text-left">
-                  <span className="font-bold text-slate-500 block mb-1">Card Pull Rates:</span>
+                  <span className="font-bold text-slate-500 block mb-1">
+                    Card Pull Rates:
+                  </span>
                   <div className="grid grid-cols-5 gap-1 text-center font-bold font-display">
                     {pack.rarityWeights.common > 0 && (
                       <div className="flex flex-col bg-slate-200/50 p-1 rounded">
                         <span className="text-[8px] text-slate-500">C</span>
-                        <span className="text-slate-700">{pack.rarityWeights.common}%</span>
+                        <span className="text-slate-700">
+                          {pack.rarityWeights.common}%
+                        </span>
                       </div>
                     )}
                     {pack.rarityWeights.uncommon > 0 && (
                       <div className="flex flex-col bg-slate-200/50 p-1 rounded">
                         <span className="text-[8px] text-slate-500">UC</span>
-                        <span className="text-slate-700">{pack.rarityWeights.uncommon}%</span>
+                        <span className="text-slate-700">
+                          {pack.rarityWeights.uncommon}%
+                        </span>
                       </div>
                     )}
                     {pack.rarityWeights.rare > 0 && (
@@ -147,16 +266,22 @@ export default function TcgShopPage({
                   </span>
 
                   <button
-                    disabled={isBuying}
+                    disabled={isBuying || isDisabled}
                     onClick={() => handleBuyPack(pack)}
                     className={cn(
                       "font-display text-xs font-bold px-5 py-2.5 rounded-full shadow-md transition-all active:scale-95",
-                      canAfford
+                      isSoldOut
+                        ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                        : canAfford
                         ? "bg-sky-500 hover:bg-sky-600 text-white"
                         : "bg-slate-200 text-slate-400 cursor-not-allowed"
                     )}
                   >
-                    {isBuying ? "Buying..." : "Rip Pack"}
+                    {isBuying
+                      ? "Buying..."
+                      : isSoldOut
+                      ? "Sold Out"
+                      : "Rip Pack"}
                   </button>
                 </div>
               </div>
