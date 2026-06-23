@@ -1162,11 +1162,11 @@ export const PACKS: PackConfig[] = [
     description: "Contains basic Pokémon/One Piece hybrid cards to start your binder.",
     allowedSets: ["starter"],
     rarityWeights: {
-      common: 77,
+      common: 71,
       uncommon: 20,
-      rare: 2,
-      ultra_rare: 0.8,
-      secret_gold: 0.2,
+      rare: 5,
+      ultra_rare: 3,
+      secret_gold: 1,
     },
   },
   {
