@@ -844,8 +844,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
           // Cumulative pool: a run includes its own cards + all cards from earlier runs
           if (runId) {
-            // Extract the SK identifier from the run ID (e.g., "RUN-SK02-01" → "SK-02")
-            const runSk = runId.replace(/^RUN-/, "").replace(/-\d+$/, "");
+            // Extract the SK identifier from the run ID (e.g., "RUN-SK01-01" → "SK-01")
+            const skMatch = runId.match(/SK(\d+)/);
+            const runSk = skMatch ? `SK-${skMatch[1]}` : "";
             const runIndex = RUN_RELEASE_ORDER.indexOf(runSk);
             const cardIndex = RUN_RELEASE_ORDER.indexOf(cardRelease);
             // If card is from a newer run than the one being opened, exclude it
