@@ -50,6 +50,19 @@ export async function getActiveRun(): Promise<TcgRun | null> {
   return data as TcgRun;
 }
 
+/** Get ALL currently active runs (for multi-run shop). */
+export async function getActiveRuns(): Promise<TcgRun[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("tcg_runs")
+    .select("*")
+    .eq("status", "active")
+    .order("created_at", { ascending: true });
+
+  if (error || !data) return [];
+  return data as TcgRun[];
+}
+
 /** Get pack supply for a given run. Returns all pack types with remaining counts. */
 export async function getPackSupply(
   runId: string
