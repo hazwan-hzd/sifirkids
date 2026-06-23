@@ -231,6 +231,56 @@ export function TcgCard({
     );
   }
 
+  if (!isLocked && card.imageUrl) {
+    return (
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={onClick}
+        style={{
+          transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${isHovered ? 1.03 : 1})`,
+          transition: isHovered ? "transform 0.05s ease-out" : "transform 0.3s ease-out",
+        }}
+        className={cn(
+          "relative rounded-[16px] border-4 border-slate-900 select-none overflow-hidden shadow-2xl cursor-pointer bg-slate-800",
+          RARITY_STYLES[card.rarity],
+          className,
+          sizeClasses[size]
+        )}
+      >
+        <img
+          src={card.imageUrl}
+          alt={card.name}
+          className="w-full h-full object-cover"
+        />
+
+        {/* Holographic overlay */}
+        {isSpecial && isHovered && (
+          <div
+            style={{
+              background: `radial-gradient(circle at ${shineX}% ${shineY}%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.05) 50%, transparent 80%)`,
+            }}
+            className="absolute inset-0 pointer-events-none mix-blend-overlay z-20"
+          />
+        )}
+        
+        {/* Rainbow foil shift for secret gold */}
+        {card.rarity === "secret_gold" && (
+          <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/20 via-yellow-500/20 to-cyan-500/20 pointer-events-none z-10 mix-blend-color-dodge animate-[pulse_3s_infinite]" />
+        )}
+
+        {/* Floating duplicate quantity badge */}
+        {quantity > 1 && (
+          <div className="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-full bg-red-600 border-2 border-white text-white font-extrabold text-xs flex items-center justify-center shadow-lg animate-bounce z-30">
+            x{quantity}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={cardRef}
