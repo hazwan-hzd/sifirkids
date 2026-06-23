@@ -155,7 +155,12 @@ function reconcileChildPoints(c: ChildData): ChildData {
   const claimsCost = c.rewards.claims
     .filter((cl) => cl.status === "approved" || cl.status === "pending")
     .reduce((sum, cl) => sum + cl.cost, 0);
-  const points = Math.max(0, totalEarned - claimsCost);
+
+  // One-time refund credits (pack purchases during bugs)
+  // Papa: 3x starter (1500 each) during SK extraction bug 2026-06-23
+  const refundCredit = c.profile.id === "papa" ? 4500 : 0;
+
+  const points = Math.max(0, totalEarned - claimsCost + refundCredit);
 
   return {
     ...c,
