@@ -22,7 +22,7 @@ export default function TcgBinderPage({
   const [filterType, setFilterType] = useState<string>("all");
   const [filterRarity, setFilterRarity] = useState<string>("all");
   const [filterOwned, setFilterOwned] = useState<"all" | "owned" | "unowned">("all");
-  const [sortBy, setSortBy] = useState<"default" | "series" | "name">("default");
+  const [sortBy, setSortBy] = useState<"default" | "rarity-desc" | "name">("default");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [collapsedSeries, setCollapsedSeries] = useState<Record<string, boolean>>({});
 
@@ -75,16 +75,29 @@ export default function TcgBinderPage({
     squishy: "Series 7: Squishy Squad",
   };
 
+  const RARITY_ORDER = {
+    common: 1,
+    uncommon: 2,
+    rare: 3,
+    ultra_rare: 4,
+    secret_gold: 5,
+  };
+
   const sortedCards = [...filteredCards].sort((a, b) => {
-    if (sortBy === "series") {
-      const nameA = SERIES_NAMES[a.set] ?? "Unknown Series";
-      const nameB = SERIES_NAMES[b.set] ?? "Unknown Series";
-      return nameA.localeCompare(nameB);
+    if (sortBy === "rarity-desc") {
+      const valA = RARITY_ORDER[a.rarity] ?? 0;
+      const valB = RARITY_ORDER[b.rarity] ?? 0;
+      if (valA !== valB) return valB - valA;
+      return a.name.localeCompare(b.name);
     }
     if (sortBy === "name") {
       return a.name.localeCompare(b.name);
     }
-    return 0;
+    // Default is rarity-asc (low to high)
+    const valA = RARITY_ORDER[a.rarity] ?? 0;
+    const valB = RARITY_ORDER[b.rarity] ?? 0;
+    if (valA !== valB) return valA - valB;
+    return a.name.localeCompare(b.name);
   });
 
   const handleSelectCard = (card: Card) => {
@@ -195,8 +208,8 @@ export default function TcgBinderPage({
               onChange={(e) => setSortBy(e.target.value as any)}
               className="bg-slate-100 border-2 border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 outline-none"
             >
-              <option value="default">Default</option>
-              <option value="series">Series Name</option>
+              <option value="default">Rarity (Low to High)</option>
+              <option value="rarity-desc">Rarity (High to Low)</option>
               <option value="name">Card Name</option>
             </select>
           </div>
