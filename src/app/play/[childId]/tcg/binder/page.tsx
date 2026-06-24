@@ -24,6 +24,7 @@ export default function TcgBinderPage({
   const [filterOwned, setFilterOwned] = useState<"all" | "owned" | "unowned">("all");
   const [sortBy, setSortBy] = useState<"default" | "series" | "name">("default");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [collapsedSeries, setCollapsedSeries] = useState<Record<string, boolean>>({});
 
   if (!hydrated) {
     return (
@@ -42,12 +43,26 @@ export default function TcgBinderPage({
     const qty = tcg.collection[card.id] ?? 0;
     const isOwned = qty > 0;
 
+    // Locked cards without database-uploaded artwork (no imageUrl) are completely hidden/deleted from display
+    if (!isOwned && !card.imageUrl) return false;
+
     if (filterType !== "all" && card.type !== filterType) return false;
     if (filterRarity !== "all" && card.rarity !== filterRarity) return false;
     if (filterOwned === "owned" && !isOwned) return false;
     if (filterOwned === "unowned" && isOwned) return false;
     return true;
   });
+
+  const SERIES_LIST = [
+    { id: "series-1", name: "Series 1: Pokemon x One Piece Hybrid", sets: ["starter", "monsters"] },
+    { id: "series-2", name: "Series 2: One Piece", sets: ["crews", "op"] },
+    { id: "series-3", name: "Series 3: My Hero Academia", sets: ["mha", "promo"] },
+    { id: "series-4", name: "Series 4: Jujutsu Kaisen", sets: ["jjk"] },
+    { id: "series-5", name: "Series 5: World Cup Football Legends", sets: ["wc"] },
+    { id: "series-6", name: "Series 6: Ruck-Fi Network Guardians", sets: ["rf"] },
+    { id: "series-7", name: "Series 7: Squishy Squad", sets: ["squishy"] },
+    { id: "series-8", name: "Series 8: Super Mario Galaxy", sets: ["smg"] },
+  ];
 
   const SERIES_NAMES: Record<string, string> = {
     starter: "Series 1: Pokemon x One Piece Hybrid (Starter)",
@@ -74,6 +89,13 @@ export default function TcgBinderPage({
 
   const handleSelectCard = (card: Card) => {
     setSelectedCard(card);
+  };
+
+  const toggleSeries = (seriesId: string) => {
+    setCollapsedSeries((prev) => ({
+      ...prev,
+      [seriesId]: !prev[seriesId],
+    }));
   };
 
   const isBuddy = selectedCard ? tcg.activeBuddyId === selectedCard.id : false;
@@ -185,35 +207,73 @@ export default function TcgBinderPage({
         </div>
       </div>
 
-      {/* Binder Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-center">
-        {sortedCards.map((card) => {
-          const qty = tcg.collection[card.id] ?? 0;
-          const isOwned = qty > 0;
-          const isCurrentBuddy = tcg.activeBuddyId === card.id;
-          const isCurrentDeck = tcg.activeDeck.includes(card.id);
+      {/* Binder Sections by Series */}
+      <div className="flex flex-col gap-6">
+        {SERIES_LIST.map((series) => {
+          const seriesCards = sortedCards.filter((card) => series.sets.includes(card.set));
+          if (seriesCards.length === 0) return null;
+
+          const isCollapsed = !!collapsedSeries[series.id];
+          const ownedCount = seriesCards.filter((card) => (tcg.collection[card.id] ?? 0) > 0).length;
 
           return (
             <div
-              key={card.id}
-              className="relative flex flex-col items-center group cursor-pointer"
-              onClick={() => handleSelectCard(card)}
+              key={series.id}
+              className="bg-white/60 border-2 border-black/5 rounded-[24px] p-4 shadow-sm"
             >
-              <TcgCard card={card} quantity={qty} isLocked={!isOwned} size="sm" />
-              
-              {/* Binder markers */}
-              {isOwned && (
-                <div className="absolute top-2 left-2 flex gap-1 z-30">
-                  {isCurrentBuddy && (
-                    <span className="text-xs bg-sky-500 border border-white text-white w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-md">
-                      ⚡
-                    </span>
-                  )}
-                  {isCurrentDeck && (
-                    <span className="text-[10px] bg-red-500 border border-white text-white w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-md">
-                      ⚔️
-                    </span>
-                  )}
+              {/* Collapsible Header */}
+              <button
+                onClick={() => toggleSeries(series.id)}
+                className="w-full flex items-center justify-between gap-3 p-2 hover:bg-black/5 rounded-2xl transition-colors outline-none cursor-pointer"
+              >
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-bold text-slate-800 font-display">
+                    {series.name}
+                  </span>
+                  <span className="text-[10px] bg-slate-100 border-2 border-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">
+                    {ownedCount} / {seriesCards.length} Owned
+                  </span>
+                </div>
+                <span className="text-xs text-slate-500 font-bold">
+                  {isCollapsed ? "Expand ▼" : "Collapse ▲"}
+                </span>
+              </button>
+
+              {/* Collapsible Grid */}
+              {!isCollapsed && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-center mt-4 pt-4 border-t-2 border-dashed border-slate-100">
+                  {seriesCards.map((card) => {
+                    const qty = tcg.collection[card.id] ?? 0;
+                    const isOwned = qty > 0;
+                    const isCurrentBuddy = tcg.activeBuddyId === card.id;
+                    const isCurrentDeck = tcg.activeDeck.includes(card.id);
+
+                    return (
+                      <div
+                        key={card.id}
+                        className="relative flex flex-col items-center group cursor-pointer"
+                        onClick={() => handleSelectCard(card)}
+                      >
+                        <TcgCard card={card} quantity={qty} isLocked={!isOwned} size="sm" />
+                        
+                        {/* Binder markers */}
+                        {isOwned && (
+                          <div className="absolute top-2 left-2 flex gap-1 z-30">
+                            {isCurrentBuddy && (
+                              <span className="text-xs bg-sky-500 border border-white text-white w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-md">
+                                ⚡
+                              </span>
+                            )}
+                            {isCurrentDeck && (
+                              <span className="text-[10px] bg-red-500 border border-white text-white w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-md">
+                                ⚔️
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

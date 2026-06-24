@@ -95,7 +95,7 @@ const allPacks = parsePacks(packsMatch[1]);
 console.log(`Parsed ${allCards.length} cards and ${allPacks.length} packs.`);
 
 // --- 2. Define runs ---
-const RUN_ORDER = ["SK-01", "SK-02"];
+const RUN_ORDER = ["SK-01", "SK-02", "SK-03"];
 
 function getCumulativePool(runId) {
   const idx = RUN_ORDER.indexOf(runId);

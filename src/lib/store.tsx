@@ -48,6 +48,57 @@ const STORAGE_KEY = "sifirkids:v1";
 const MAX_SESSIONS = 200; // cap per child to keep storage small
 const ALT_ART_PULL_WEIGHT = 0.2;
 
+// ---------------------------------------------------------------------------
+// Points Ledger (Supabase single source of truth)
+// ---------------------------------------------------------------------------
+type LedgerType = "quiz_earn" | "pack_spend" | "claim_spend" | "claim_refund" | "manual_credit";
+
+/** Write a ledger row (fire-and-forget). Positive amount = credit, negative = debit. */
+function writeLedger(
+  childId: string,
+  type: LedgerType,
+  amount: number,
+  referenceId?: string,
+  note?: string,
+): void {
+  if (!supabase) return;
+  supabase
+    .from("points_ledger")
+    .insert({ child_id: childId, type, amount, reference_id: referenceId, note })
+    .then(({ error }) => {
+      if (error) console.error("Ledger write failed:", error.message);
+    });
+}
+
+/** Fetch current balance from the ledger. Returns 0 if offline/error. */
+async function fetchLedgerBalance(childId: string): Promise<number> {
+  if (!supabase) return 0;
+  const { data, error } = await supabase
+    .from("points_ledger")
+    .select("amount")
+    .eq("child_id", childId);
+  if (error || !data) return 0;
+  return Math.max(0, data.reduce((sum, r) => sum + r.amount, 0));
+}
+
+/** Fetch balances for all kids in one call. */
+async function fetchAllLedgerBalances(): Promise<Record<string, number>> {
+  if (!supabase) return {};
+  const { data, error } = await supabase
+    .from("points_ledger")
+    .select("child_id, amount");
+  if (error || !data) return {};
+  const balances: Record<string, number> = {};
+  for (const r of data) {
+    balances[r.child_id] = (balances[r.child_id] ?? 0) + r.amount;
+  }
+  // Clamp all to 0
+  for (const k of Object.keys(balances)) {
+    balances[k] = Math.max(0, balances[k]);
+  }
+  return balances;
+}
+
 function isAltArtCard(card: Card): boolean {
   return /\balt\b/i.test(card.id.replace(/[-_]+/g, " "));
 }
@@ -118,90 +169,49 @@ function defaultState(): AppState {
 }
 
 function reconcileChildPoints(c: ChildData): ChildData {
-  let modified = false;
+  // Fix known bad session values from legacy bugs
   const sessions = c.sessions.map((s) => {
     if (s.id === "66f23b02-bbf1-43d1-ad9a-50e84c8692a8" && s.pointsEarned === 18500) {
-      modified = true;
       return { ...s, pointsEarned: 185 };
     }
     if (s.id === "f8cb8254-63a5-4728-a209-e497a4099943" && s.pointsEarned === 10000) {
-      modified = true;
       return { ...s, pointsEarned: 100 };
     }
     if (s.id === "feeb5e29-1394-4715-9337-b5698ab6e538" && s.pointsEarned === 11000) {
-      modified = true;
       return { ...s, pointsEarned: 110 };
     }
     return s;
   });
 
-  // One-time refund: inject a credit session for Papa (3x1500 bugged starter packs, 2026-06-23)
-  const REFUND_ID = "refund-papa-sk-bug-20260623";
-  if (c.profile.id === "papa" && !sessions.some((s) => s.id === REFUND_ID)) {
-    sessions.push({
-      id: REFUND_ID,
-      module: "multiplication" as const,
-      topic: "refund",
-      total: 0,
-      correct: 0,
-      durationSec: 0,
-      pointsEarned: 4500,
-      date: "2026-06-23T16:00:00.000Z",
-    });
-  }
-
-  // Re-calculate daily history points for the bugged date: 2026-06-22
-  const daily = { ...c.daily, history: { ...c.daily.history } };
-  const targetDay = "2026-06-22";
-  if (daily.history[targetDay]) {
-    const daySessions = sessions.filter(
-      (s) => s.date.substring(0, 10) === targetDay
-    );
-    const dayPoints = daySessions.reduce((sum, s) => sum + s.pointsEarned, 0);
-    daily.history[targetDay] = {
-      ...daily.history[targetDay],
-      pointsEarned: dayPoints,
-    };
-  }
-
-  // Recompute total earned
+  // Local fallback: compute points from sessions (overwritten by ledger on sync)
   const totalEarned = sessions.reduce((sum, s) => sum + s.pointsEarned, 0);
-  
-  // Recompute current points = total earned - sum of approved/pending claims cost - spent TCG points
   const claimsCost = c.rewards.claims
     .filter((cl) => cl.status === "approved" || cl.status === "pending")
     .reduce((sum, cl) => sum + cl.cost, 0);
   const spentPoints = c.tcg?.spentPoints ?? 0;
   const points = Math.max(0, totalEarned - claimsCost - spentPoints);
 
-  let result: ChildData = {
+  // Remove cards with no artwork from collection
+  let tcg = c.tcg
+    ? { ...c.tcg, spentPoints: c.tcg.spentPoints ?? 0 }
+    : { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0, spentPoints: 0 };
+
+  if (tcg.collection?.["promo-gojo-03"]) {
+    const col = { ...tcg.collection };
+    delete col["promo-gojo-03"];
+    tcg = { ...tcg, collection: col };
+  }
+
+  return {
     ...c,
     sessions,
-    daily,
     rewards: {
       ...c.rewards,
       points,
       totalEarned,
     },
-    tcg: c.tcg
-      ? { ...c.tcg, spentPoints: c.tcg.spentPoints ?? 0 }
-      : {
-          collection: {},
-          activeBuddyId: null,
-          activeDeck: [],
-          openedPacksCount: 0,
-          spentPoints: 0,
-        },
+    tcg,
   };
-
-  // Remove cards with no artwork from Papa's collection (promo-gojo-03 has no image)
-  if (result.profile.id === "papa" && result.tcg?.collection?.["promo-gojo-03"]) {
-    const col = { ...result.tcg.collection };
-    delete col["promo-gojo-03"];
-    result = { ...result, tcg: { ...result.tcg, collection: col } };
-  }
-
-  return result;
 }
 
 /** Merge persisted state onto defaults so new fields never crash old saves. */
@@ -372,12 +382,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
 
   // Supabase cloud sync: merge remote data into state after hydration
-  const sbSyncDone = useRef(false);
+  // Re-runs whenever sbData reference changes (on focus/online refetch)
+  const lastSbData = useRef<Record<string, SupabaseChildData> | null>(null);
   const { data: sbData } = useSupabaseData();
 
   useEffect(() => {
-    if (!hydrated || !sbData || sbSyncDone.current) return;
-    sbSyncDone.current = true;
+    if (!hydrated || !sbData || sbData === lastSbData.current) return;
+    lastSbData.current = sbData;
 
     setState((prev) => {
       const next = { ...prev, children: { ...prev.children } };
@@ -386,10 +397,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (!remote || remote.sessions.length === 0) continue;
         const local = next.children[p.id];
 
-        // Use whichever has more sessions
-        const sessions = remote.sessions.length > local.sessions.length
-          ? remote.sessions
-          : local.sessions;
+        // Merge sessions by UUID deduplication (not winner-takes-all)
+        const sessionMap = new Map<string, (typeof local.sessions)[0]>();
+        for (const s of local.sessions) sessionMap.set(s.id, s);
+        for (const s of remote.sessions) sessionMap.set(s.id, s);
+        const sessions = Array.from(sessionMap.values()).sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        );
 
         // Merge topic stats (take higher attempts)
         // For Arabic: remote keys are aggregate topics ("set-1", "all") but local keys
@@ -469,10 +483,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
-    // Fetch Child Profiles (Avatar + TCG collection)
+    // Fetch Child Profiles (Avatar + TCG collection + Claims)
     supabase
       .from("child_profiles")
-      .select("id, avatar, tcg")
+      .select("id, avatar, tcg, claims")
       .then(({ data }) => {
         if (data) {
           setState((prev) => {
@@ -480,10 +494,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             for (const row of data) {
               const cid = row.id as ChildId;
               if (next.children[cid]) {
+                const localTcg = next.children[cid].tcg;
+                const cloudTcg = row.tcg as typeof localTcg | null;
+
+                // Merge TCG: take MAX spentPoints, union collections
+                const mergedTcg = {
+                  ...(localTcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0, spentPoints: 0 }),
+                  spentPoints: Math.max(cloudTcg?.spentPoints ?? 0, localTcg?.spentPoints ?? 0),
+                  openedPacksCount: Math.max(cloudTcg?.openedPacksCount ?? 0, localTcg?.openedPacksCount ?? 0),
+                  collection: { ...(localTcg?.collection ?? {}), ...(cloudTcg?.collection ?? {}) },
+                };
+
+                // Merge claims by ID (union of local + cloud)
+                const localClaims = next.children[cid].rewards.claims ?? [];
+                const cloudClaims = (row.claims as typeof localClaims) ?? [];
+                const claimMap = new Map<string, (typeof localClaims)[0]>();
+                for (const cl of localClaims) claimMap.set(cl.id, cl);
+                for (const cl of cloudClaims) claimMap.set(cl.id, cl); // cloud wins on conflict
+                const mergedClaims = Array.from(claimMap.values());
+
                 next.children[cid] = reconcileChildPoints({
                   ...next.children[cid],
                   avatar: row.avatar ?? next.children[cid].avatar,
-                  tcg: row.tcg ?? next.children[cid].tcg,
+                  tcg: mergedTcg,
+                  rewards: {
+                    ...next.children[cid].rewards,
+                    claims: mergedClaims,
+                  },
                 });
               }
             }
@@ -491,6 +528,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           });
         }
       });
+  }, [hydrated]);
+
+  // Points Ledger sync: fetch authoritative balances from Supabase
+  const ledgerSyncDone = useRef(false);
+  useEffect(() => {
+    if (!hydrated || ledgerSyncDone.current) return;
+    ledgerSyncDone.current = true;
+
+    fetchAllLedgerBalances().then((balances) => {
+      if (Object.keys(balances).length === 0) return; // offline or error
+      setState((prev) => {
+        const next = { ...prev, children: { ...prev.children } };
+        for (const [childId, balance] of Object.entries(balances)) {
+          if (next.children[childId as ChildId]) {
+            next.children[childId as ChildId] = {
+              ...next.children[childId as ChildId],
+              rewards: {
+                ...next.children[childId as ChildId].rewards,
+                points: balance,
+              },
+            };
+          }
+        }
+        return next;
+      });
+    });
   }, [hydrated]);
 
   // persist on change (after hydration)
@@ -571,6 +634,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const firstSessionTodayHint =
         (state.children[childId].daily.history[today]?.sessions ?? 0) === 0;
       const returnedPoints = basePoints + (firstSessionTodayHint ? POINTS.dailyStreakBonus : 0);
+      const sessionId = uid();
 
       updateChild(childId, (c) => {
         let next = touchDay(c, true);
@@ -610,7 +674,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         // session log (capped)
         const session: QuizSession = {
-          id: uid(),
+          id: sessionId,
           module: input.module,
           topic: input.topic,
           quizMode: input.quizMode,
@@ -678,6 +742,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         input.answers ?? [],
       );
 
+      // Points ledger: record earnings
+      if (outcome.pointsEarned > 0) {
+        writeLedger(childId, "quiz_earn", outcome.pointsEarned, uid(), input.module + ":" + input.topic);
+      }
+
       return outcome;
     },
     [recordQuizLocal],
@@ -694,37 +763,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateChild],
   );
 
+  // Helper: persist claims to Supabase (fire-and-forget)
+  const persistClaims = useCallback((childId: ChildId, claims: ChildData["rewards"]["claims"]) => {
+    if (supabase) {
+      supabase
+        .from("child_profiles")
+        .upsert({ id: childId, claims, updated_at: new Date().toISOString() })
+        .then();
+    }
+  }, []);
+
   const claimReward = useCallback(
     (childId: ChildId, rewardId: string): boolean => {
       const reward = getReward(rewardId);
       if (!reward) return false;
       let ok = false;
+      const claimId = uid();
       updateChild(childId, (c) => {
         if (c.rewards.points < reward.cost) return c;
         ok = true;
+        const newClaims = [
+          ...c.rewards.claims,
+          {
+            id: claimId,
+            rewardId: reward.id,
+            name: reward.name,
+            icon: reward.icon,
+            cost: reward.cost,
+            date: new Date().toISOString(),
+            status: "pending" as const,
+          },
+        ];
+        // Persist claims to Supabase
+        persistClaims(childId, newClaims);
         return {
           ...c,
           rewards: {
             ...c.rewards,
             points: c.rewards.points - reward.cost,
-            claims: [
-              ...c.rewards.claims,
-              {
-                id: uid(),
-                rewardId: reward.id,
-                name: reward.name,
-                icon: reward.icon,
-                cost: reward.cost,
-                date: new Date().toISOString(),
-                status: "pending",
-              },
-            ],
+            claims: newClaims,
           },
         };
       });
+      // Points ledger: record claim spend
+      if (ok) {
+        writeLedger(childId, "claim_spend", -reward.cost, claimId, reward.name);
+      }
       return ok;
     },
-    [updateChild],
+    [updateChild, persistClaims],
   );
 
   const deductPoints = useCallback(
@@ -787,6 +874,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           avatar: updatedAvatar,
         };
       });
+      // Points ledger: record avatar unlock spend
+      if (ok) {
+        writeLedger(childId, "claim_spend", -cost, itemId, "Avatar: " + itemId);
+      }
       return ok;
     },
     [updateChild],
@@ -794,24 +885,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const resolveClaim = useCallback(
     (childId: ChildId, claimId: string, approve: boolean) => {
+      let claimCost = 0;
+      let claimName = "";
       updateChild(childId, (c) => {
         const claim = c.rewards.claims.find((cl) => cl.id === claimId);
         if (!claim || claim.status !== "pending") return c;
+        claimCost = claim.cost;
+        claimName = claim.name;
         // denied claims refund the points
         const refund = approve ? 0 : claim.cost;
+        const updatedClaims = c.rewards.claims.map((cl) =>
+          cl.id === claimId ? { ...cl, status: (approve ? "approved" : "denied") as "approved" | "denied" } : cl,
+        );
+        // Persist claims to Supabase
+        persistClaims(childId, updatedClaims);
         return {
           ...c,
           rewards: {
             ...c.rewards,
             points: c.rewards.points + refund,
-            claims: c.rewards.claims.map((cl) =>
-              cl.id === claimId ? { ...cl, status: approve ? "approved" : "denied" } : cl,
-            ),
+            claims: updatedClaims,
           },
         };
       });
+      // Points ledger: refund if denied
+      if (!approve && claimCost > 0) {
+        writeLedger(childId, "claim_refund", claimCost, claimId, "Denied: " + claimName);
+      }
     },
-    [updateChild],
+    [updateChild, persistClaims],
   );
 
   const setParentPin = useCallback((pin: string) => {
@@ -853,7 +955,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   /** Run release order - cumulative pool: each run includes all cards from this run and earlier. */
-  const RUN_RELEASE_ORDER: string[] = ["SK-01", "SK-02"];
+  const RUN_RELEASE_ORDER: string[] = ["SK-01", "SK-02", "SK-03"];
 
   const buyBoosterPack = useCallback(
     (childId: ChildId, packId: string, runId?: string): Card[] | null => {
@@ -972,6 +1074,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           tcg: nextTcg,
         });
       });
+
+      // Points ledger: record pack purchase
+      if (pulledCards.length > 0) {
+        writeLedger(childId, "pack_spend", -pack.cost, packId + ":" + (runId ?? "legacy"), pack.name);
+      }
 
       return pulledCards.length > 0 ? pulledCards : null;
     },
