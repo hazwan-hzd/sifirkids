@@ -106,6 +106,7 @@ function defaultChild(profile: Profile): ChildData {
       activeBuddyId: null,
       activeDeck: [],
       openedPacksCount: 0,
+      spentPoints: 0,
     },
   };
 }
@@ -166,11 +167,12 @@ function reconcileChildPoints(c: ChildData): ChildData {
   // Recompute total earned
   const totalEarned = sessions.reduce((sum, s) => sum + s.pointsEarned, 0);
   
-  // Recompute current points = total earned - sum of approved/pending claims cost
+  // Recompute current points = total earned - sum of approved/pending claims cost - spent TCG points
   const claimsCost = c.rewards.claims
     .filter((cl) => cl.status === "approved" || cl.status === "pending")
     .reduce((sum, cl) => sum + cl.cost, 0);
-  const points = Math.max(0, totalEarned - claimsCost);
+  const spentPoints = c.tcg?.spentPoints ?? 0;
+  const points = Math.max(0, totalEarned - claimsCost - spentPoints);
 
   let result: ChildData = {
     ...c,
@@ -181,12 +183,15 @@ function reconcileChildPoints(c: ChildData): ChildData {
       points,
       totalEarned,
     },
-    tcg: c.tcg ?? {
-      collection: {},
-      activeBuddyId: null,
-      activeDeck: [],
-      openedPacksCount: 0,
-    },
+    tcg: c.tcg
+      ? { ...c.tcg, spentPoints: c.tcg.spentPoints ?? 0 }
+      : {
+          collection: {},
+          activeBuddyId: null,
+          activeDeck: [],
+          openedPacksCount: 0,
+          spentPoints: 0,
+        },
   };
 
   // Remove cards with no artwork from Papa's collection (promo-gojo-03 has no image)
@@ -475,11 +480,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             for (const row of data) {
               const cid = row.id as ChildId;
               if (next.children[cid]) {
-                next.children[cid] = {
+                next.children[cid] = reconcileChildPoints({
                   ...next.children[cid],
                   avatar: row.avatar ?? next.children[cid].avatar,
                   tcg: row.tcg ?? next.children[cid].tcg,
-                };
+                });
               }
             }
             return next;
@@ -932,7 +937,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         pulledCards = Array.from({ length: pack.cardCount }, () => drawCard());
 
-        const tcg = c.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0 };
+        const tcg = c.tcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0, spentPoints: 0 };
         const newCollection = { ...tcg.collection };
         for (const card of pulledCards) {
           newCollection[card.id] = (newCollection[card.id] ?? 0) + 1;
@@ -942,6 +947,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ...tcg,
           collection: newCollection,
           openedPacksCount: tcg.openedPacksCount + 1,
+          spentPoints: (tcg.spentPoints ?? 0) + pack.cost,
         };
 
         // Sync to Supabase
@@ -961,14 +967,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           });
         }
 
-        return {
+        return reconcileChildPoints({
           ...c,
-          rewards: {
-            ...c.rewards,
-            points: c.rewards.points - pack.cost,
-          },
           tcg: nextTcg,
-        };
+        });
       });
 
       return pulledCards.length > 0 ? pulledCards : null;

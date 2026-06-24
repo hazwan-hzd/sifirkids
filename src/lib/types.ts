@@ -140,6 +140,7 @@ export interface ChildTCG {
   activeBuddyId: string | null;
   activeDeck: string[]; // list of card IDs (max 5)
   openedPacksCount: number;
+  spentPoints?: number;
 }
 
 export interface TradeRequest {
