@@ -1258,11 +1258,11 @@ export const PACKS: PackConfig[] = [
     description: "SK-02 signature pack! World Cup stars and Jujutsu Kaisen crossover cards.",
     allowedSets: ["wc"],
     rarityWeights: {
-      common: 35,
+      common: 40,
       uncommon: 30,
       rare: 20,
-      ultra_rare: 12,
-      secret_gold: 3,
+      ultra_rare: 8,
+      secret_gold: 2,
     },
   },
 ];
