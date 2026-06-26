@@ -34,6 +34,7 @@ import {
   DEFAULT_DAILY_GOAL,
   MASTERY,
   POINTS,
+  TABLE_MULTIPLIERS,
   PROFILES,
   ALL_PROFILES,
   getReward,
@@ -258,6 +259,8 @@ export interface QuizResultInput {
   durationSec: number;
   /** longest correct run in this quiz */
   bestStreak: number;
+  /** Override computed points with a fixed value (used for battle rewards) */
+  bonusPoints?: number;
   /** individual answer records for Supabase logging */
   answers?: Array<{
     question: string;
@@ -278,6 +281,8 @@ export interface QuizOutcome {
   pointsEarned: number;
   perfect: boolean;
   masteredNow: string[];
+  /** Table difficulty multiplier applied (1 = base, 2 = double, 3 = triple) */
+  multiplier: number;
 }
 
 export function computePoints(
@@ -622,9 +627,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const recordQuizLocal = useCallback(
     (childId: ChildId, input: QuizResultInput): QuizOutcome => {
-      let basePoints = computePoints(input.correct, input.total, input.bestStreak);
-      if (input.module === "bahasa_melayu" || input.module === "pafa_kafa") {
-        basePoints *= 2;
+      let basePoints: number;
+      let tableMultiplier = 1;
+      if (input.bonusPoints != null) {
+        // Fixed reward override (used for battle wins, etc.)
+        basePoints = input.bonusPoints;
+      } else {
+        basePoints = computePoints(input.correct, input.total, input.bestStreak);
+        if (input.module === "bahasa_melayu" || input.module === "pafa_kafa") {
+          basePoints *= 2;
+        }
+        // Harder multiplication tables earn multiplied points
+        if (input.module === "multiplication" && input.topic !== "mixed") {
+          const tableNum = parseInt(input.topic, 10);
+          tableMultiplier = TABLE_MULTIPLIERS[tableNum] ?? 1;
+          basePoints *= tableMultiplier;
+        }
       }
       const perfect = input.total > 0 && input.correct === input.total;
       const masteredNow: string[] = [];
@@ -716,7 +734,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return next;
       });
 
-      return { pointsEarned: returnedPoints, perfect, masteredNow };
+      return { pointsEarned: returnedPoints, perfect, masteredNow, multiplier: tableMultiplier };
     },
     [updateChild, touchDay, state],
   );

@@ -102,6 +102,12 @@ export const POINTS = {
   dailyStreakBonus: 19,
 };
 
+/** Harder tables earn bonus point multipliers. */
+export const TABLE_MULTIPLIERS: Record<number, number> = {
+  6: 2, 7: 2,   // double points
+  8: 3, 9: 3,   // triple points
+};
+
 /** Mastery: at least this many attempts AND accuracy at/above threshold. */
 export const MASTERY = {
   minAttempts: 10,

@@ -8,7 +8,7 @@ import type { ChildId, Card } from "@/lib/types";
 import { useApp } from "@/lib/store";
 import { PageShell, Loading, PointsBadge, BackButton } from "@/components/ui";
 import { TcgCard } from "@/components/TcgCard";
-import { cn, randInt, shuffle } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface Opponent {
   name: string;
@@ -66,6 +66,8 @@ export default function TcgBattlePage({
   const [oppScore, setOppScore] = useState<number>(0);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [battleOutcome, setBattleOutcome] = useState<"win" | "lose" | "draw">("draw");
+  const [earnedReward, setEarnedReward] = useState<number>(0);
+  const [victoryTier, setVictoryTier] = useState<string>("");
 
   if (!hydrated) {
     return (
@@ -102,54 +104,121 @@ export default function TcgBattlePage({
     setGameState("battle");
   };
 
-  const calculateDamageBonus = (atkType: Card["type"], defType: Card["type"]): { bonus: number; log: string } => {
+  const RARITY_BONUS: Record<string, number> = {
+    common: 0, uncommon: 3, rare: 6, ultra_rare: 10, secret_gold: 15,
+  };
+
+  const calculateDamageBonus = (atkType: Card["type"], defType: Card["type"]): { bonus: number; penalty: number; log: string } => {
     // Fire > Grass > Water > Fire
-    // Lightning > Water
-    // Strawhat > Marine > Shadow
-    if (atkType === "fire" && defType === "grass") return { bonus: 20, log: "🔥 Fire melts Grass! (+20 Atk)" };
-    if (atkType === "grass" && defType === "water") return { bonus: 20, log: "🍃 Grass absorbs Water! (+20 Atk)" };
-    if (atkType === "water" && defType === "fire") return { bonus: 20, log: "💧 Water douses Fire! (+20 Atk)" };
-    if (atkType === "lightning" && defType === "water") return { bonus: 20, log: "⚡ Lightning shocks Water! (+20 Atk)" };
-    
-    if (atkType === "strawhat" && defType === "marine") return { bonus: 10, log: "👒 Pirate Crew outsmarts Navy Marines! (+10 Atk)" };
-    if (atkType === "marine" && defType === "shadow") return { bonus: 10, log: "⚓ Navy Marines capture Shadow! (+10 Atk)" };
-    
-    return { bonus: 0, log: "" };
+    if (atkType === "fire" && defType === "grass") return { bonus: 20, penalty: 0, log: "🔥 Fire melts Grass! (+20 Atk)" };
+    if (atkType === "grass" && defType === "water") return { bonus: 20, penalty: 0, log: "🍃 Grass absorbs Water! (+20 Atk)" };
+    if (atkType === "water" && defType === "fire") return { bonus: 20, penalty: 0, log: "💧 Water douses Fire! (+20 Atk)" };
+    if (atkType === "lightning" && defType === "water") return { bonus: 20, penalty: 0, log: "⚡ Lightning shocks Water! (+20 Atk)" };
+    // One Piece factions
+    if (atkType === "strawhat" && defType === "marine") return { bonus: 10, penalty: 0, log: "👒 Pirates outsmart Marines! (+10 Atk)" };
+    if (atkType === "marine" && defType === "shadow") return { bonus: 10, penalty: 0, log: "⚓ Marines capture Shadow! (+10 Atk)" };
+    if (atkType === "shadow" && defType === "strawhat") return { bonus: 10, penalty: 0, log: "👁️ Shadow ambushes Pirates! (+10 Atk)" };
+    // World Cup positions
+    if (atkType === "attacker" && defType === "goalkeeper") return { bonus: 15, penalty: 0, log: "⚽ Striker scores past Keeper! (+15 Atk)" };
+    if (atkType === "defender" && defType === "attacker") return { bonus: 15, penalty: 0, log: "🛡️ Defender shuts down Striker! (+15 Atk)" };
+    if (atkType === "midfielder" && defType === "attacker") return { bonus: 10, penalty: 0, log: "🎯 Midfielder controls Striker! (+10 Atk)" };
+    if (atkType === "goalkeeper" && defType === "midfielder") return { bonus: 10, penalty: 0, log: "🧤 Keeper saves mid-range shot! (+10 Atk)" };
+    // JJK types
+    if (atkType === "sorcerer" && defType === "curse") return { bonus: 15, penalty: 0, log: "✨ Sorcerer exorcises Curse! (+15 Atk)" };
+    if (atkType === "curse" && defType === "domain") return { bonus: 10, penalty: 0, log: "👿 Curse corrupts Domain! (+10 Atk)" };
+    if (atkType === "domain" && defType === "sorcerer") return { bonus: 15, penalty: 0, log: "🌀 Domain Expansion traps Sorcerer! (+15 Atk)" };
+    // MHA hero
+    if (atkType === "hero" && defType === "shadow") return { bonus: 10, penalty: 0, log: "🦸 Hero defeats the Shadows! (+10 Atk)" };
+    if (atkType === "hero" && defType === "curse") return { bonus: 10, penalty: 0, log: "🦸 Hero overcomes Curse! (+10 Atk)" };
+    // Legendary universal small bonus
+    if (atkType === "legendary") return { bonus: 5, penalty: 0, log: "👑 Legendary power! (+5 Atk)" };
+    if (atkType === "legend") return { bonus: 5, penalty: 0, log: "🌟 Football Legend! (+5 Atk)" };
+    if (atkType === "special_grade") return { bonus: 8, penalty: 0, log: "💀 Special Grade power! (+8 Atk)" };
+
+    // Weakness penalties (reverse matchups)
+    if (atkType === "fire" && defType === "water") return { bonus: 0, penalty: 10, log: "🌊 Fire weakened by Water! (-10 Atk)" };
+    if (atkType === "grass" && defType === "fire") return { bonus: 0, penalty: 10, log: "🔥 Grass wilts against Fire! (-10 Atk)" };
+    if (atkType === "water" && defType === "grass") return { bonus: 0, penalty: 10, log: "🍃 Water absorbed by Grass! (-10 Atk)" };
+
+    return { bonus: 0, penalty: 0, log: "" };
+  };
+
+  const chooseAICard = (hand: Card[], playerCard: Card, difficulty: Opponent["difficulty"]): Card => {
+    if (difficulty === "Easy" || hand.length <= 1) {
+      return hand[Math.floor(Math.random() * hand.length)];
+    }
+    // Score each card by potential damage output
+    const scored = hand.map((card) => {
+      const { bonus, penalty } = calculateDamageBonus(card.type, playerCard.type);
+      return { card, score: card.attackDmg + bonus - penalty + (RARITY_BONUS[card.rarity] ?? 0) };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    if (difficulty === "Medium") {
+      // 50% smart pick, 50% random
+      return Math.random() < 0.5 ? scored[0].card : hand[Math.floor(Math.random() * hand.length)];
+    }
+    // Hard: always picks best counter
+    return scored[0].card;
+  };
+
+  const getVictoryTier = (pScore: number, oScore: number) => {
+    const margin = pScore - oScore;
+    if (margin >= 5) return { tier: "Flawless Victory", emoji: "💎", multiplier: 2.0 };
+    if (margin >= 3) return { tier: "Dominant Win", emoji: "🔥", multiplier: 1.5 };
+    if (margin >= 2) return { tier: "Solid Win", emoji: "⭐", multiplier: 1.25 };
+    return { tier: "Close Win", emoji: "✅", multiplier: 1.0 };
   };
 
   const handlePlayCard = (playerCard: Card) => {
-    if (isAnimating) return;
+    if (isAnimating || !opponent) return;
     setIsAnimating(true);
     setPlayerActive(playerCard);
 
-    // AI chooses random card
-    const oppCardIndex = Math.floor(Math.random() * oppHand.length);
-    const oppCard = oppHand[oppCardIndex];
+    // AI chooses card based on difficulty
+    const oppCard = chooseAICard(oppHand, playerCard, opponent.difficulty);
     setOppActive(oppCard);
 
-    // Compute Duel
+    // Compute Duel with rarity + buddy bonuses
     const playerBonuses = calculateDamageBonus(playerCard.type, oppCard.type);
     const oppBonuses = calculateDamageBonus(oppCard.type, playerCard.type);
 
-    const playerTotalAtk = playerCard.attackDmg + playerBonuses.bonus;
-    const oppTotalAtk = oppCard.attackDmg + oppBonuses.bonus;
+    const playerRarityBonus = RARITY_BONUS[playerCard.rarity] ?? 0;
+    const oppRarityBonus = RARITY_BONUS[oppCard.rarity] ?? 0;
+    const buddyBonus = (playerCard.id === tcg.activeBuddyId) ? 10 : 0;
+
+    // Critical hit chance (15%)
+    const playerCrit = Math.random() < 0.15;
+    const oppCrit = Math.random() < 0.15;
+    const playerCritMult = playerCrit ? 1.5 : 1;
+    const oppCritMult = oppCrit ? 1.5 : 1;
+
+    const playerTotalAtk = Math.floor((playerCard.attackDmg + playerBonuses.bonus - playerBonuses.penalty + playerRarityBonus + buddyBonus) * playerCritMult);
+    const oppTotalAtk = Math.floor((oppCard.attackDmg + oppBonuses.bonus - oppBonuses.penalty + oppRarityBonus) * oppCritMult);
 
     let roundOutcomeLog = "";
     let pPoints = 0;
     let oPoints = 0;
 
     if (playerTotalAtk > oppTotalAtk) {
-      roundOutcomeLog = `🎉 ${playerCard.name} wins the clash! Deals ${playerTotalAtk} DMG against ${oppCard.name}'s ${oppTotalAtk} DMG.`;
+      roundOutcomeLog = `🎉 ${playerCard.name} wins the clash! Deals ${playerTotalAtk} DMG vs ${oppCard.name}'s ${oppTotalAtk} DMG.`;
       pPoints = 1;
     } else if (oppTotalAtk > playerTotalAtk) {
-      roundOutcomeLog = `💥 ${oppCard.name} wins the clash! Deals ${oppTotalAtk} DMG against ${playerCard.name}'s ${playerTotalAtk} DMG.`;
+      roundOutcomeLog = `💥 ${oppCard.name} wins the clash! Deals ${oppTotalAtk} DMG vs ${playerCard.name}'s ${playerTotalAtk} DMG.`;
       oPoints = 1;
     } else {
       roundOutcomeLog = `🤝 It's a tie clash! Both deal ${playerTotalAtk} DMG.`;
     }
 
-    const bonusLog = [playerBonuses.log, oppBonuses.log].filter(Boolean).join(" | ");
+    // Build detailed log
+    const modifiers: string[] = [];
+    if (playerBonuses.log) modifiers.push(playerBonuses.log);
+    if (oppBonuses.log) modifiers.push(oppBonuses.log);
+    if (playerRarityBonus > 0) modifiers.push(`${playerCard.name} rarity +${playerRarityBonus}`);
+    if (buddyBonus > 0) modifiers.push(`⚡ Buddy Bond +${buddyBonus} Atk!`);
+    if (playerCrit) modifiers.push(`💥 ${playerCard.name} CRITICAL HIT! (1.5x)`);
+    if (oppCrit) modifiers.push(`💥 ${oppCard.name} CRITICAL HIT! (1.5x)`);
 
+    const bonusLog = modifiers.join(" | ");
     setRoundLog(`${playerCard.name} attacks with ${playerCard.attackName}! ${oppCard.name} counters with ${oppCard.attackName}! ${bonusLog ? "\n(" + bonusLog + ")" : ""}\n\n${roundOutcomeLog}`);
 
     setTimeout(() => {
@@ -176,18 +245,20 @@ export default function TcgBattlePage({
           let outcome: "win" | "lose" | "draw" = "draw";
           if (finalPlayerScore > finalOppScore) {
             outcome = "win";
-            // Award points!
-            if (opponent) {
-              recordQuiz(id, {
-                module: "multiplication",
-                topic: "TCG Battle: " + opponent.name,
-                total: 5,
-                correct: 5,
-                durationSec: 30,
-                bestStreak: 5,
-                // this adds opponent.rewardPoints points to their state
-              });
-            }
+            const vt = getVictoryTier(finalPlayerScore, finalOppScore);
+            const reward = Math.floor(opponent.rewardPoints * vt.multiplier);
+            setEarnedReward(reward);
+            setVictoryTier(`${vt.emoji} ${vt.tier} (${vt.multiplier}x)`);
+            // Award correct points using bonusPoints override
+            recordQuiz(id, {
+              module: "multiplication",
+              topic: "TCG Battle: " + opponent.name,
+              total: 5,
+              correct: finalPlayerScore,
+              durationSec: 30,
+              bestStreak: finalPlayerScore,
+              bonusPoints: reward,
+            });
           } else if (finalOppScore > finalPlayerScore) {
             outcome = "lose";
           }
@@ -356,12 +427,15 @@ export default function TcgBattlePage({
           {battleOutcome === "win" ? (
             <>
               <span className="text-7xl mb-4 block animate-bounce">🏆</span>
-              <h2 className="font-display text-2xl font-black text-emerald-600 mb-2">Victory!</h2>
+              <h2 className="font-display text-2xl font-black text-emerald-600 mb-1">Victory!</h2>
+              {victoryTier && (
+                <p className="text-xs font-bold text-amber-600 mb-2">{victoryTier}</p>
+              )}
               <p className="text-sm text-slate-600 mb-6">
                 Excellent strategy! You defeated **{opponent.name}** and claimed the victory reward!
               </p>
               <div className="bg-amber-100 border border-amber-200 rounded-2xl p-4 mb-6 font-display font-extrabold text-amber-700 flex justify-center items-center gap-2">
-                <span>🪙</span> +{opponent.rewardPoints} points added to wallet!
+                <span>🪙</span> +{earnedReward} points added to wallet!
               </div>
             </>
           ) : battleOutcome === "lose" ? (

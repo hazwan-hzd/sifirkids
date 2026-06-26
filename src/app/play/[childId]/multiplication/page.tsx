@@ -3,7 +3,7 @@
 import { use, useRef, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CHILD_IDS, COLOR_CLASSES, TABLES } from "@/lib/data";
+import { CHILD_IDS, COLOR_CLASSES, TABLES, TABLE_MULTIPLIERS } from "@/lib/data";
 import type { ChildId, QuizMode } from "@/lib/types";
 import { useChild } from "@/lib/store";
 import type { QuizOutcome } from "@/lib/store";
@@ -110,6 +110,7 @@ export default function MultiplicationPage({
             const stat = child.multiplication[String(t)];
             const mastered = stat?.mastered;
             const accuracy = stat && stat.attempts > 0 ? pct(stat.correct, stat.attempts) : null;
+            const mult = TABLE_MULTIPLIERS[t];
             return (
               <button
                 key={t}
@@ -118,11 +119,19 @@ export default function MultiplicationPage({
                   setScreen("menu");
                 }}
                 className={cn(
-                  "btn-pop tap animate-rise flex flex-col items-center justify-center gap-1 rounded-[var(--radius-blob)] p-4 shadow-[var(--shadow-pop)]",
+                  "btn-pop tap animate-rise relative flex flex-col items-center justify-center gap-1 rounded-[var(--radius-blob)] p-4 shadow-[var(--shadow-pop)]",
                   mastered ? "bg-coral-500 text-white" : "bg-coral-100 text-coral-600",
                 )}
                 style={{ animationDelay: `${i * 30}ms` }}
               >
+                {mult && (
+                  <span className={cn(
+                    "absolute -right-1 -top-1 z-10 flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 font-display text-xs font-black text-white shadow-md",
+                    mult === 3 ? "bg-gradient-to-br from-amber-400 to-orange-500" : "bg-gradient-to-br from-sky-400 to-indigo-500",
+                  )}>
+                    {mult}x
+                  </span>
+                )}
                 <span className="font-display text-3xl font-bold">{t}</span>
                 <span className="text-sm font-semibold">
                   {mastered ? "⭐" : accuracy !== null ? `${accuracy}%` : "·"}
@@ -155,6 +164,16 @@ export default function MultiplicationPage({
           <span className="font-display text-2xl font-bold text-ink/70">The</span>
           <span className="font-display text-7xl font-bold text-coral-600">{table}×</span>
           <span className="font-display text-2xl font-bold text-ink/70">table</span>
+          {typeof table === "number" && TABLE_MULTIPLIERS[table] && (
+            <span className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 font-display text-sm font-black text-white shadow-md animate-pop",
+              TABLE_MULTIPLIERS[table] === 3
+                ? "bg-gradient-to-r from-amber-400 to-orange-500"
+                : "bg-gradient-to-r from-sky-400 to-indigo-500",
+            )}>
+              {TABLE_MULTIPLIERS[table] === 3 ? "⚡ TRIPLE POINTS!" : "🔥 DOUBLE POINTS!"}
+            </span>
+          )}
           {stat && stat.attempts > 0 && (
             <span className="font-display text-base font-semibold text-ink/60">
               {stat.mastered ? "⭐ Mastered!" : `${pct(stat.correct, stat.attempts)}% accuracy`}
@@ -256,7 +275,28 @@ export default function MultiplicationPage({
       <PageShell>
         <Confetti show={outcome.perfect} />
         {header}
-        <Card className="flex flex-col items-center gap-4 py-8 text-center animate-pop">
+        <Card className="relative flex flex-col items-center gap-4 py-8 text-center animate-pop overflow-hidden">
+          {/* Multiplier Stamp */}
+          {outcome.multiplier > 1 && (
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-20 animate-pop">
+              <div className={cn(
+                "flex flex-col items-center justify-center rounded-3xl border-4 border-dashed px-8 py-4 -rotate-12 shadow-2xl",
+                outcome.multiplier === 3
+                  ? "border-amber-400 bg-gradient-to-br from-amber-400/95 to-orange-500/95 text-white"
+                  : "border-sky-400 bg-gradient-to-br from-sky-400/95 to-indigo-500/95 text-white",
+              )}
+              style={{ animationDelay: "200ms" }}
+              >
+                <span className="font-display text-5xl font-black leading-none drop-shadow-lg">
+                  {outcome.multiplier === 3 ? "⚡" : "🔥"} {outcome.multiplier}x
+                </span>
+                <span className="font-display text-xl font-black tracking-wider uppercase drop-shadow-md">
+                  {outcome.multiplier === 3 ? "Triple Points!" : "Double Points!"}
+                </span>
+              </div>
+            </div>
+          )}
+
           <span className="text-6xl">{outcome.perfect ? "🏆" : accuracy >= 70 ? "🎉" : "💪"}</span>
           <h1 className="font-display text-3xl font-bold text-coral-600">
             {outcome.perfect ? "Perfect!" : "Nice work!"}
