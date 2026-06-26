@@ -635,6 +635,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } else {
         basePoints = computePoints(input.correct, input.total, input.bestStreak);
         if (input.module === "bahasa_melayu" || input.module === "pafa_kafa") {
+          tableMultiplier = 2;
           basePoints *= 2;
         }
         // Harder multiplication tables earn multiplied points

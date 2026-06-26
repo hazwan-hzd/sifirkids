@@ -599,7 +599,21 @@ export default function BahasaMelayuPage({
         </p>
 
         {/* Score Card */}
-        <Card className="bg-white p-6 shadow-sm border border-ink/5 rounded-3xl mb-6">
+        <Card className="relative bg-white p-6 shadow-sm border border-ink/5 rounded-3xl mb-6 overflow-hidden">
+          {/* Double Points Stamp */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-20 animate-pop">
+            <div className="flex flex-col items-center justify-center rounded-3xl border-4 border-dashed border-sky-400 bg-gradient-to-br from-sky-400/95 to-indigo-500/95 text-white px-8 py-4 -rotate-12 shadow-2xl"
+              style={{ animationDelay: "200ms" }}
+            >
+              <span className="font-display text-5xl font-black leading-none drop-shadow-lg">
+                🔥 2x
+              </span>
+              <span className="font-display text-xl font-black tracking-wider uppercase drop-shadow-md">
+                Double Points!
+              </span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="border-r border-ink/5">
               <span className="block text-xs font-display font-semibold text-ink/50 uppercase">Skor</span>
