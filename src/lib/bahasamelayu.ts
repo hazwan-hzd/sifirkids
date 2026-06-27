@@ -47,6 +47,11 @@ export interface BMQuestion {
   /** kbat = Kemahiran Berfikir Aras Tinggi (higher-order) */
   difficulty: "easy" | "standard" | "kbat";
   tags: string[] | null;
+  // Custom properties for Pemahaman
+  passage_title?: string;
+  passage_text?: string;
+  raw_question_text?: string;
+  answer_config?: any;
 }
 
 export interface BMVocabGap {
@@ -124,6 +129,29 @@ export async function fetchQuestions(
   mode: QuizMode = "quick",
   childId?: string,
 ): Promise<BMQuestion[]> {
+  if (topic === 3) {
+    try {
+      const { getLocalPemahamanQuestions, PEMAHAMAN_PASSAGES } = await import("./pemahaman-engine");
+      const allQuestions = getLocalPemahamanQuestions(level);
+
+      const passageIds = PEMAHAMAN_PASSAGES.map(p => p.id);
+      shuffle(passageIds);
+
+      const selectedPassages = mode === "quick" ? passageIds.slice(0, 2) : passageIds;
+
+      const filteredQuestions: BMQuestion[] = [];
+      for (const pid of selectedPassages) {
+        const pQs = allQuestions.filter(q => q.tags?.includes(pid));
+        pQs.sort((a, b) => a.id.localeCompare(b.id));
+        filteredQuestions.push(...pQs);
+      }
+      return filteredQuestions;
+    } catch (e) {
+      console.error("Error loading Pemahaman questions:", e);
+      return [];
+    }
+  }
+
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("bm_questions")
@@ -174,13 +202,24 @@ export async function fetchTopics(level: BMLevel): Promise<TopicInfo[]> {
       map.set(r.topic, { title: r.topic_title, count: 1 });
     }
   }
-  return Array.from(map.entries())
+  const topicsList = Array.from(map.entries())
     .sort(([a], [b]) => a - b)
     .map(([t, { title, count }]) => ({
       topic: t,
       topic_title: title,
       questionCount: count,
     }));
+
+  if (level === "f3") {
+    // Append topic 3 Pemahaman
+    topicsList.push({
+      topic: 3,
+      topic_title: "Pemahaman",
+      questionCount: 50,
+    });
+  }
+
+  return topicsList;
 }
 
 /** Fetch past quiz results for a child. */

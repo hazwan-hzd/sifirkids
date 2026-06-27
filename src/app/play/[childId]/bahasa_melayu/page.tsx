@@ -29,22 +29,26 @@ import {
   type BMQuizResult,
   type QuizMode,
 } from "@/lib/bahasamelayu";
+import { checkAnswer } from "@/lib/pemahaman-engine";
 
 const ACCENT = "sunny" as const;
 
 const TOPIC_EMOJIS: Record<number, string> = {
   1: "✏️",
   2: "✍️",
+  3: "📖",
 };
 
 const TOPIC_SHORT: Record<number, string> = {
   1: "Tatabahasa",
   2: "Karangan",
+  3: "Pemahaman",
 };
 
 const TOPIC_DESC: Record<number, string> = {
   1: "Morfologi, sintaksis, peribahasa, dan kesalahan bahasa.",
   2: "Membina ayat, menyusun perenggan, dan penulisan ulasan/karangan.",
+  3: "Baca petikan pendek dan jawab soalan pemahaman secara bertulis.",
 };
 
 type Screen = "topics" | "quiz" | "results";
@@ -89,6 +93,11 @@ export default function BahasaMelayuPage({
   const [vocabInput, setVocabInput] = useState("");
   const [usedHint, setUsedHint] = useState(false);
   const [showHintConfirm, setShowHintConfirm] = useState(false);
+  const [lastFeedback, setLastFeedback] = useState<{
+    matched: string[];
+    missing: string[];
+    correct: boolean;
+  } | null>(null);
   const questionStartRef = useRef<number>(Date.now());
   const quizStartRef = useRef<number>(Date.now());
 
@@ -138,6 +147,7 @@ export default function BahasaMelayuPage({
     setAnswers([]);
     setVocabGaps([]);
     setSelectedAnswer(null);
+    setLastFeedback(null);
     setShowExplanation(false);
     setVocabInput("");
     questionStartRef.current = Date.now();
@@ -149,8 +159,21 @@ export default function BahasaMelayuPage({
   const submitAnswer = useCallback(() => {
     if (!selectedAnswer || showExplanation) return;
     const q = questions[currentIdx];
-    const isCorrect =
-      selectedAnswer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
+    
+    let isCorrect = false;
+    if (activeTopic === 3 && q.answer_config) {
+      const result = checkAnswer(selectedAnswer, q.answer_config);
+      isCorrect = result.correct;
+      setLastFeedback({
+        matched: result.matchedKeywords,
+        missing: result.missingKeywords,
+        correct: result.correct,
+      });
+    } else {
+      isCorrect =
+        selectedAnswer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
+    }
+    
     const responseTimeMs = Date.now() - questionStartRef.current;
 
     setAnswers((prev) => [
@@ -163,7 +186,7 @@ export default function BahasaMelayuPage({
       },
     ]);
     setShowExplanation(true);
-  }, [selectedAnswer, showExplanation, questions, currentIdx]);
+  }, [selectedAnswer, showExplanation, questions, currentIdx, activeTopic]);
 
   // Save vocab gap for current question
   const saveVocabGap = useCallback(() => {
@@ -191,6 +214,7 @@ export default function BahasaMelayuPage({
     if (currentIdx < questions.length - 1) {
       setCurrentIdx((i) => i + 1);
       setSelectedAnswer(null);
+      setLastFeedback(null);
       setShowExplanation(false);
       setVocabInput("");
       setUsedHint(false);
@@ -375,6 +399,18 @@ export default function BahasaMelayuPage({
           </span>
         </div>
 
+        {/* Passage Card (Topic 3: Pemahaman) */}
+        {activeTopic === 3 && (q as any).passage_text && (
+          <Card className="mb-4 bg-sky-50/50 border border-sky-100 p-5 text-left rounded-2xl">
+            <h3 className="font-display font-extrabold text-sky-800 text-lg mb-2">
+              📖 Petikan: {(q as any).passage_title || "Sila baca petikan di bawah"}
+            </h3>
+            <p className="text-base text-sky-950 leading-relaxed font-medium">
+              {(q as any).passage_text}
+            </p>
+          </Card>
+        )}
+
         {/* Question Text */}
         <Card className="mb-6 bg-white p-6 shadow-sm border border-ink/5">
           <div className="mb-3 flex gap-2">
@@ -388,7 +424,7 @@ export default function BahasaMelayuPage({
             ))}
           </div>
           <h2 className="font-display text-xl font-bold text-ink leading-relaxed whitespace-pre-line">
-            {q.question_text}
+            {activeTopic === 3 ? (q as any).raw_question_text : q.question_text}
           </h2>
         </Card>
 
@@ -444,7 +480,7 @@ export default function BahasaMelayuPage({
                 className={cn(
                   "w-full p-4 rounded-2xl border text-lg focus:outline-none focus:ring-2 focus:ring-sunny-500",
                   showExplanation
-                    ? selectedAnswer?.trim().toLowerCase() === q.correct_answer.trim().toLowerCase()
+                    ? (activeTopic === 3 ? lastFeedback?.correct : selectedAnswer?.trim().toLowerCase() === q.correct_answer.trim().toLowerCase())
                       ? "bg-emerald-50 border-emerald-500 text-emerald-800"
                       : "bg-rose-50 border-rose-500 text-rose-800"
                     : "bg-white border-ink/10 text-ink"
@@ -453,6 +489,22 @@ export default function BahasaMelayuPage({
               {showExplanation && (
                 <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-sm font-semibold">
                   Jawapan betul: <span className="font-mono text-base font-bold underline">{q.correct_answer}</span>
+                </div>
+              )}
+              {showExplanation && activeTopic === 3 && lastFeedback && (
+                <div className="p-3 bg-sunny-50 border border-sunny-200 rounded-xl text-sm font-semibold space-y-2 text-left">
+                  {lastFeedback.matched.length > 0 && (
+                    <div>
+                      <span className="text-emerald-700">✅ Kata kunci ditemui: </span>
+                      <span className="text-emerald-950 font-bold">{lastFeedback.matched.join(", ")}</span>
+                    </div>
+                  )}
+                  {lastFeedback.missing.length > 0 && (
+                    <div>
+                      <span className="text-amber-700">⚠️ Kata kunci belum lengkap: </span>
+                      <span className="text-amber-950 font-bold">{lastFeedback.missing.join(", ")}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -52,23 +52,51 @@ const ALT_ART_PULL_WEIGHT = 0.2;
 // ---------------------------------------------------------------------------
 // Points Ledger (Supabase single source of truth)
 // ---------------------------------------------------------------------------
-type LedgerType = "quiz_earn" | "pack_spend" | "claim_spend" | "claim_refund" | "manual_credit";
+export type LedgerType = "quiz_earn" | "pack_spend" | "claim_spend" | "claim_refund" | "manual_credit";
 
-/** Write a ledger row (fire-and-forget). Positive amount = credit, negative = debit. */
-function writeLedger(
+/** Write a ledger row directly. Throws errors. */
+export async function writeLedgerDirect(
   childId: string,
   type: LedgerType,
   amount: number,
   referenceId?: string,
   note?: string,
-): void {
-  if (!supabase) return;
-  supabase
+): Promise<void> {
+  if (!supabase) throw new Error("Supabase client not initialized");
+  const { error } = await supabase
     .from("points_ledger")
-    .insert({ child_id: childId, type, amount, reference_id: referenceId, note })
-    .then(({ error }) => {
-      if (error) console.error("Ledger write failed:", error.message);
-    });
+    .insert({ child_id: childId, type, amount, reference_id: referenceId, note });
+  if (error) throw error;
+}
+
+/** Write a ledger row. Positive amount = credit, negative = debit. If offline, queue it. */
+export async function writeLedger(
+  childId: string,
+  type: LedgerType,
+  amount: number,
+  referenceId?: string,
+  note?: string,
+): Promise<void> {
+  try {
+    await writeLedgerDirect(childId, type, amount, referenceId, note);
+  } catch (err) {
+    console.error("Ledger write failed, queueing offline:", err);
+    try {
+      const { enqueueSyncItem } = await import("./sync-queue");
+      enqueueSyncItem({
+        type: "ledger",
+        payload: {
+          child_id: childId,
+          type,
+          amount,
+          reference_id: referenceId,
+          note,
+        },
+      });
+    } catch (queueErr) {
+      console.error("Failed to queue ledger item offline:", queueErr);
+    }
+  }
 }
 
 /** Fetch current balance from the ledger. Returns 0 if offline/error. */

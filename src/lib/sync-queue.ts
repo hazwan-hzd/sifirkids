@@ -4,6 +4,7 @@ import { logPeribahasaQuizDirect } from "./peribahasa";
 import { logBMQuizDirect, logVocabGapDirect as logBMVocabGapDirect } from "./bahasamelayu";
 import { logPafaKafaQuizDirect, logTermGapDirect } from "./pafakafa";
 import { logGeografiQuizDirect, logVocabGapDirect as logGeografiVocabGapDirect } from "./geografi";
+import { writeLedgerDirect, type LedgerType } from "./store";
 
 export type QueueItem =
   | {
@@ -167,6 +168,16 @@ export type QueueItem =
         chapter: number | null;
         context: string | null;
       };
+    }
+  | {
+      type: "ledger";
+      payload: {
+        child_id: string;
+        type: LedgerType;
+        amount: number;
+        reference_id?: string;
+        note?: string;
+      };
     };
 
 const QUEUE_KEY = "sifirkids:sync_queue";
@@ -262,6 +273,14 @@ export async function flushSyncQueue(): Promise<void> {
         await logGeografiQuizDirect(item.payload.result, item.payload.answers);
       } else if (item.type === "geografi_vocab_gap") {
         await logGeografiVocabGapDirect(item.payload);
+      } else if (item.type === "ledger") {
+        await writeLedgerDirect(
+          item.payload.child_id,
+          item.payload.type,
+          item.payload.amount,
+          item.payload.reference_id,
+          item.payload.note,
+        );
       }
       console.log(`Synced item of type: ${item.type} successfully.`);
     } catch (err) {

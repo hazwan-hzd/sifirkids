@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "./supabase";
-import type { ChildId, QuizSession, TopicStat, DayRecord, QuizMode } from "./types";
+import type { QuizSession, TopicStat, DayRecord, QuizMode, ModuleId } from "./types";
 import { emptyTopicStat } from "./types";
-import { MASTERY, POINTS, TABLES, ARABIC_LETTERS } from "./data";
-import { computePoints } from "./store";
+import { MASTERY, ARABIC_LETTERS } from "./data";
 
 export interface SupabaseChildData {
   sessions: QuizSession[];
@@ -85,7 +84,7 @@ function buildChildData(
     // Build session
     sessions.push({
       id: row.id,
-      module: row.module as "multiplication" | "arabic",
+      module: row.module as ModuleId,
       topic: row.topic,
       quizMode: (row.quiz_mode as QuizMode) ?? undefined,
       total: row.total_questions,
@@ -202,8 +201,8 @@ export function useSupabaseData() {
     setError(null);
 
     try {
-      // Fetch sessions, Arabic answers, Sejarah, Peribahasa, BM and Geografi results in parallel
-      const [sessionsRes, arabicAnswersRes, sejarahRes, peribahasaRes, bmRes, geografiRes] = await Promise.all([
+      // Fetch sessions and Arabic answers in parallel
+      const [sessionsRes, arabicAnswersRes] = await Promise.all([
         supabase
           .from("quiz_sessions")
           .select("*")
@@ -213,95 +212,16 @@ export function useSupabaseData() {
           .select("child_id, correct_answer, is_correct, created_at")
           .eq("module", "arabic")
           .order("created_at", { ascending: true }),
-        supabase
-          .from("sejarah_quiz_results")
-          .select("*")
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("peribahasa_quiz_results")
-          .select("*")
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("bm_quiz_results")
-          .select("*")
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("geografi_quiz_results")
-          .select("*")
-          .order("created_at", { ascending: true }),
       ]);
 
       if (sessionsRes.error) throw sessionsRes.error;
-      if (sejarahRes.error) throw sejarahRes.error;
-      if (peribahasaRes.error) throw peribahasaRes.error;
-      if (bmRes.error) throw bmRes.error;
-      if (geografiRes.error) throw geografiRes.error;
+      if (arabicAnswersRes.error) throw arabicAnswersRes.error;
 
       const rows = sessionsRes.data ?? [];
       const arabicAnswerRows = arabicAnswersRes.data ?? [];
 
-      // Map Sejarah results to the generic quiz session shape
-      const sejarahRows = (sejarahRes.data ?? []).map((r) => ({
-        id: r.id,
-        child_id: r.child_id,
-        module: "sejarah",
-        topic: `bab-${r.chapter}`,
-        quiz_mode: null,
-        total_questions: r.total_questions,
-        correct_answers: r.correct_answers,
-        duration_sec: r.duration_sec ?? 0,
-        best_streak: 0, // not tracked in DB
-        points_earned: r.points_earned ?? 0,
-        created_at: r.created_at,
-      }));
-
-      // Map Peribahasa results to the generic quiz session shape
-      const peribahasaRows = (peribahasaRes.data ?? []).map((r) => ({
-        id: r.id,
-        child_id: r.child_id,
-        module: "peribahasa",
-        topic: `tingkatan-${r.tingkatan}`,
-        quiz_mode: null,
-        total_questions: r.total_questions,
-        correct_answers: r.correct_answers,
-        duration_sec: r.duration_sec ?? 0,
-        best_streak: 0, // not tracked in DB
-        points_earned: r.points_earned ?? 0,
-        created_at: r.created_at,
-      }));
-
-      // Map Bahasa Melayu results to the generic quiz session shape
-      const bmRows = (bmRes.data ?? []).map((r) => ({
-        id: r.id,
-        child_id: r.child_id,
-        module: "bahasa_melayu",
-        topic: `topik-${r.topic}`,
-        quiz_mode: null,
-        total_questions: r.total_questions,
-        correct_answers: r.correct_answers,
-        duration_sec: r.duration_sec ?? 0,
-        best_streak: 0, // not tracked in DB
-        points_earned: r.points_earned ?? 0,
-        created_at: r.created_at,
-      }));
-
-      // Map Geografi results to the generic quiz session shape
-      const geografiRows = (geografiRes.data ?? []).map((r) => ({
-        id: r.id,
-        child_id: r.child_id,
-        module: "geografi",
-        topic: `bab-${r.chapter}`,
-        quiz_mode: null,
-        total_questions: r.total_questions,
-        correct_answers: r.correct_answers,
-        duration_sec: r.duration_sec ?? 0,
-        best_streak: 0, // not tracked in DB
-        points_earned: r.points_earned ?? 0,
-        created_at: r.created_at,
-      }));
-
       // Combine all rows
-      const combinedRows = [...rows, ...sejarahRows, ...peribahasaRows, ...bmRows, ...geografiRows];
+      const combinedRows = rows;
 
       // Group sessions by child_id
       const grouped: Record<string, typeof combinedRows> = {};

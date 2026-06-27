@@ -94,8 +94,8 @@ values (3, 'Ketinggian dan Keratan Rentas', 'Benar atau Salah: Keratan rentas di
 insert into geografi_questions (chapter, chapter_title, question_text, question_type, options, correct_answer, explanation, difficulty, tags)
 values (4, 'Pandang Darat', 'Yang manakah antara berikut merupakan pandang darat budaya?', 'mcq', array['Sungai', 'Sawah padi', 'Gunung', 'Hutan'], 'Sawah padi', 'Pandang darat budaya ialah ciri landskap yang dihasilkan oleh aktiviti manusia seperti sawah padi, jalan raya, dan petempatan.', 'easy', array['pandang darat budaya', 'peta topografi']);
 
-insert into geografi_questions (chapter, chapter_title, question_text, question_type, options, correct_answer, explanation, difficulty, tags)
-values (4, 'Pandang Darat', 'Berdasarkan peta topografi, nyatakan dua ciri pandang darat fizikal dan dua ciri pandang darat budaya yang boleh dikenal pasti.', 'fill_blank', null, 'Fizikal: sungai dan bukit; Budaya: jalan raya dan petempatan', 'Pandang darat fizikal merujuk kepada ciri semula jadi seperti sungai, bukit, lembah, dan hutan. Pandang darat budaya merujuk kepada ciri buatan manusia seperti jalan raya, petempatan, dan ladang.', 'kbat', array['pandang darat fizikal', 'pandang darat budaya']);
+insert into geografi_questions (chapter, chapter_title, question_text, question_type, options, correct_answer, explanation, difficulty, tags, image_url)
+values (4, 'Pandang Darat', 'Berdasarkan peta topografi, nyatakan dua ciri pandang darat fizikal dan dua ciri pandang darat budaya yang boleh dikenal pasti.', 'fill_blank', null, 'Fizikal: sungai dan bukit; Budaya: jalan raya dan petempatan', 'Pandang darat fizikal merujuk kepada ciri semula jadi seperti sungai, bukit, lembah, dan hutan. Pandang darat budaya merujuk kepada ciri buatan manusia seperti jalan raya, petempatan, dan ladang.', 'kbat', array['pandang darat fizikal', 'pandang darat budaya'], '/images/geografi/peta_topografi_placeholder.png');
 
 -- Bab 5: Pergerakan Plat Tektonik (3 soalan)
 
