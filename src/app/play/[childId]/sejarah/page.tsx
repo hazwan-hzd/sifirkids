@@ -442,15 +442,15 @@ export default function SejarahPage({
         <div className="mb-4 flex flex-col gap-2">
           {q.question_type === "mcq" &&
             q.options?.map((opt, i) => {
-              const letter = opt.charAt(0);
-              const isSelected = selectedAnswer === letter;
-              const isCorrectOpt = letter === q.correct_answer;
+              const letter = String.fromCharCode(65 + i); // A, B, C, D
+              const isSelected = selectedAnswer === opt;
+              const isCorrectOpt = opt === q.correct_answer;
               const showResult = alreadyAnswered;
 
               return (
                 <button
                   key={i}
-                  onClick={() => !alreadyAnswered && setSelectedAnswer(letter)}
+                  onClick={() => !alreadyAnswered && setSelectedAnswer(opt)}
                   disabled={alreadyAnswered}
                   className={cn(
                     "tap flex items-center gap-3 rounded-2xl px-5 py-4 text-left font-display text-base font-semibold transition-all",
@@ -477,16 +477,19 @@ export default function SejarahPage({
                   >
                     {letter}
                   </span>
-                  <span>{opt.slice(3)}</span>
+                  <span>{opt}</span>
                 </button>
               );
             })}
 
           {q.question_type === "true_false" && (
             <div className="grid grid-cols-2 gap-3">
-              {["Betul", "Salah"].map((opt) => {
+              {["Benar", "Salah"].map((opt) => {
                 const isSelected = selectedAnswer === opt;
-                const isCorrectOpt = opt === q.correct_answer;
+                // Safely compare in case DB has "true"/"false" instead of "Benar"/"Salah"
+                const dbCorrect = q.correct_answer?.toLowerCase() === "true" ? "Benar" : 
+                                 (q.correct_answer?.toLowerCase() === "false" ? "Salah" : q.correct_answer);
+                const isCorrectOpt = opt === dbCorrect;
                 const showResult = alreadyAnswered;
 
                 return (
@@ -506,7 +509,7 @@ export default function SejarahPage({
                     )}
                   >
                     <span className="text-3xl">
-                      {opt === "Betul" ? "✅" : "❌"}
+                      {opt === "Benar" ? "✅" : "❌"}
                     </span>
                     {opt}
                   </button>
