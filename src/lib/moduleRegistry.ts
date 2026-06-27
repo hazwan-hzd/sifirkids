@@ -69,10 +69,10 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
   },
   {
     id: "geografi",
-    label: "Geografi Tingkatan 4",
+    label: "Geografi Tingkatan 3",
     emoji: "🌍",
     accent: "sky",
-    description: "Kuiz KSSM — Kemahiran, Fizikal & Manusia",
+    description: "Kuiz KSSM — Kemahiran, Fizikal & Manusia (Tingkatan 1-3)",
     status: "active",
     parentOnly: false,
     children: ["dhiya"],

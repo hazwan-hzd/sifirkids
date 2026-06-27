@@ -182,10 +182,10 @@ export default function ChildHubPage({
           >
             <span className="text-6xl">🌍</span>
             <span className="font-display text-2xl font-bold text-sky-600">
-              Geografi Tingkatan 4
+              Geografi Tingkatan 3
             </span>
             <span className="text-sm text-ink/70">
-              Kuiz KSSM — Kemahiran, Fizikal & Manusia
+              Kuiz KSSM — Kemahiran, Fizikal & Manusia (Tingkatan 1-3)
             </span>
           </Link>
         )}
