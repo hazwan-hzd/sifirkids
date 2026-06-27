@@ -222,8 +222,8 @@ async function run() {
   }
 
   // Save log output
-  fs.writeFileSync("/Users/hazwans./.gemini/antigravity/brain/1cf11d33-bf1d-4ceb-b5d3-cfafda0e68b8/scratch/audit_output.txt", logContent);
-  log("\nWritten full log to /Users/hazwans./.gemini/antigravity/brain/1cf11d33-bf1d-4ceb-b5d3-cfafda0e68b8/scratch/audit_output.txt");
+  fs.writeFileSync("./audit_output.txt", logContent);
+  log("\nWritten full log to ./audit_output.txt");
 }
 
 run();

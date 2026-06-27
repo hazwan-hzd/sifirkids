@@ -1,0 +1,1040 @@
+=== STARTING COMPREHENSIVE POINTS & STATE AUDIT ===
+Fetched 3 profiles.
+Fetched 384 general quiz sessions.
+Fetched 160 card pull log entries.
+
+==================================================
+AUDITING CHILD: HAFEEZA
+==================================================
+DB Profile TCG State:
+  - Opened Packs Count: 3
+  - Spent Points in Profile: 7500
+TCG Pull Log Cards Count:
+  - pack-squishy: 5 cards (~1 packs, cost/pack: 2000, total: 2000 pts)
+  - pack-my-hero: 5 cards (~1 packs, cost/pack: 5000, total: 5000 pts)
+  - pack-starter: 5 cards (~1 packs, cost/pack: 1000, total: 1000 pts)
+Calculated TCG Stats:
+  - Calculated Packs Count: 3
+  - Calculated Spent Points: 8000
+  ⚠️ MISMATCH: spentPoints in DB is 7500 but calculated is 8000! Diff: 500
+Quiz Sessions Count (quiz_sessions): 99
+Verifying Points per Session:
+  ⚠️ ANOMALY on 2026-06-22T16:09:16.374203+00:00 (multiplication - 2):
+    DB Points: 185
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 15
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-23T06:50:31.482634+00:00 (multiplication - 2):
+    DB Points: 170
+    Expected Points: 185 (Base: 170, Daily Bonus: 15)
+    Diff: -15
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T00:15:41.8189+00:00 (arabic - set-1):
+    DB Points: 234
+    Expected Points: 185 (Base: 170, Daily Bonus: 15)
+    Diff: 49
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T00:16:23.066961+00:00 (arabic - set-2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T00:17:01.376435+00:00 (arabic - set-4):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T00:17:33.524617+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:18:13.75088+00:00 (pafa_kafa - bab-2):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:18:43.008448+00:00 (pafa_kafa - bab-3):
+    DB Points: 26
+    Expected Points: 10 (Base: 10, Daily Bonus: 0)
+    Diff: 16
+    Stats: Correct: 1/2, Streak: 1
+  ⚠️ ANOMALY on 2026-06-24T00:18:54.94675+00:00 (pafa_kafa - bab-3):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:19:35.363298+00:00 (pafa_kafa - bab-4):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:20:14.512482+00:00 (pafa_kafa - bab-5):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:20:36.628188+00:00 (pafa_kafa - bab-6):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:21:49.617891+00:00 (pafa_kafa - bab-7):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:22:13.236266+00:00 (pafa_kafa - bab-7):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:22:42.684468+00:00 (pafa_kafa - bab-8):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:23:06.990888+00:00 (pafa_kafa - bab-9):
+    DB Points: 26
+    Expected Points: 10 (Base: 10, Daily Bonus: 0)
+    Diff: 16
+    Stats: Correct: 1/2, Streak: 1
+  ⚠️ ANOMALY on 2026-06-24T00:23:26.193299+00:00 (pafa_kafa - bab-9):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:28:14.710227+00:00 (pafa_kafa - bab-10):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T00:32:21.669792+00:00 (multiplication - 2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 5
+  ⚠️ ANOMALY on 2026-06-24T04:07:40.397872+00:00 (multiplication - 2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T04:08:09.844824+00:00 (multiplication - 2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T04:09:01.85683+00:00 (multiplication - 2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 8
+  ⚠️ ANOMALY on 2026-06-24T04:21:22.086427+00:00 (multiplication - 2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T11:30:46.391881+00:00 (multiplication - 2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T11:31:17.783111+00:00 (arabic - all):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T11:31:46.761462+00:00 (arabic - all):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T11:32:11.483893+00:00 (arabic - all):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T11:32:33.80121+00:00 (arabic - all):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T11:33:46.111087+00:00 (multiplication - 2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 7
+  ⚠️ ANOMALY on 2026-06-24T22:40:08.635131+00:00 (pafa_kafa - bab-1):
+    DB Points: 95
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 65
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:40:17.621274+00:00 (pafa_kafa - bab-2):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:40:26.761909+00:00 (pafa_kafa - bab-3):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:40:55.075008+00:00 (pafa_kafa - bab-4):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:41:05.246556+00:00 (pafa_kafa - bab-4):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:41:28.079251+00:00 (pafa_kafa - bab-5):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:41:56.474694+00:00 (pafa_kafa - bab-6):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:42:35.876363+00:00 (pafa_kafa - bab-7):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:43:48.739236+00:00 (pafa_kafa - bab-8):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:44:18.60236+00:00 (pafa_kafa - bab-10):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:44:26.588598+00:00 (pafa_kafa - bab-9):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T22:45:56.477897+00:00 (multiplication - 2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-25T06:43:20.931504+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 145 (Base: 130, Daily Bonus: 15)
+    Diff: 23
+    Stats: Correct: 11/12, Streak: 11
+  ⚠️ ANOMALY on 2026-06-25T06:43:53.67432+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:44:19.858266+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:44:56.44017+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:45:36.983705+00:00 (multiplication - 2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/12, Streak: 9
+  ⚠️ ANOMALY on 2026-06-25T07:28:26.068474+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-25T07:28:34.915748+00:00 (pafa_kafa - bab-2):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-25T07:28:45.202226+00:00 (pafa_kafa - bab-3):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-25T07:28:53.995976+00:00 (pafa_kafa - bab-4):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-25T07:29:20.472264+00:00 (pafa_kafa - bab-5):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-25T13:24:37.245391+00:00 (multiplication - 2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-26T05:08:32.876184+00:00 (multiplication - 2):
+    DB Points: 234
+    Expected Points: 185 (Base: 170, Daily Bonus: 15)
+    Diff: 49
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-26T05:09:01.519865+00:00 (multiplication - 2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-26T14:35:54.980562+00:00 (multiplication - 7):
+    DB Points: 430
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 260
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ Total Anomalies found: 55
+Total Points in quiz_sessions: 15301
+Total Points Recalculated: 12755
+Module tables sum: PAFKAFA: 2123
+
+==================================================
+AUDITING CHILD: ILYAS
+==================================================
+DB Profile TCG State:
+  - Opened Packs Count: 15
+  - Spent Points in Profile: 48000
+TCG Pull Log Cards Count:
+  - pack-legendary: 5 cards (~1 packs, cost/pack: 8000, total: 8000 pts)
+  - pack-starter: 10 cards (~2 packs, cost/pack: 1000, total: 2000 pts)
+  - pack-wc: 55 cards (~11 packs, cost/pack: 4000, total: 44000 pts)
+  - pack-squishy: 5 cards (~1 packs, cost/pack: 2000, total: 2000 pts)
+Calculated TCG Stats:
+  - Calculated Packs Count: 15
+  - Calculated Spent Points: 56000
+  ⚠️ MISMATCH: spentPoints in DB is 48000 but calculated is 56000! Diff: 8000
+Quiz Sessions Count (quiz_sessions): 159
+Verifying Points per Session:
+  ⚠️ ANOMALY on 2026-06-23T23:15:12.302189+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 139
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 44
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-23T23:16:59.789597+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T23:18:52.786946+00:00 (pafa_kafa - bab-2):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T09:09:48.276002+00:00 (multiplication - 2):
+    DB Points: 155
+    Expected Points: 135 (Base: 120, Daily Bonus: 15)
+    Diff: 20
+    Stats: Correct: 10/12, Streak: 7
+  ⚠️ ANOMALY on 2026-06-24T09:11:23.939224+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 6
+  ⚠️ ANOMALY on 2026-06-24T09:12:22.468147+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T09:12:49.819213+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 6
+  ⚠️ ANOMALY on 2026-06-24T09:14:10.274989+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 6
+  ⚠️ ANOMALY on 2026-06-24T09:14:10.634575+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T13:47:40.237159+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T13:48:25.747479+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 7
+  ⚠️ ANOMALY on 2026-06-24T13:48:51.564313+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T13:50:21.861443+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T13:50:49.373689+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T14:46:15.911136+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 6
+  ⚠️ ANOMALY on 2026-06-24T14:46:48.681546+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T14:47:11.366223+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-24T14:47:52.731778+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 6
+  ⚠️ ANOMALY on 2026-06-25T06:26:06.65909+00:00 (multiplication - 2):
+    DB Points: 187
+    Expected Points: 145 (Base: 130, Daily Bonus: 15)
+    Diff: 42
+    Stats: Correct: 11/12, Streak: 8
+  ⚠️ ANOMALY on 2026-06-25T06:26:53.053793+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:27:16.188256+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:28:23.083982+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:29:38.116712+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:31:59.788218+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 7
+  ⚠️ ANOMALY on 2026-06-25T06:32:26.86344+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:33:05.161054+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:33:51.845985+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:34:44.492748+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:35:17.001637+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:35:48.76507+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:36:41.210255+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 8
+  ⚠️ ANOMALY on 2026-06-25T06:37:31.595947+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:38:18.472134+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:39:10.562543+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:40:10.115208+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:46:27.235871+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 7
+  ⚠️ ANOMALY on 2026-06-25T06:51:05.89707+00:00 (bahasa_melayu - topik-1):
+    DB Points: 284
+    Expected Points: 220 (Base: 220, Daily Bonus: 0)
+    Diff: 64
+    Stats: Correct: 9/10, Streak: 8
+  ⚠️ ANOMALY on 2026-06-25T06:52:00.202765+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:54:47.162261+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:55:19.908329+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:56:15.334295+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:57:13.827107+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:58:46.156355+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T06:59:41.087767+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T07:00:07.351479+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T08:03:57.025884+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T08:04:42.432062+00:00 (multiplication - 2):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 6
+  ⚠️ ANOMALY on 2026-06-25T08:05:23.824295+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-25T14:50:40.077371+00:00 (multiplication - TCG Battle: Multiplication Slime):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-25T14:51:14.285126+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-25T14:52:49.526501+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-25T14:53:17.284263+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T13:56:55.155089+00:00 (multiplication - 2):
+    DB Points: 272
+    Expected Points: 215 (Base: 200, Daily Bonus: 15)
+    Diff: 57
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T13:57:25.16351+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T13:58:09.54951+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T13:58:33.802748+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T13:59:06.253322+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T13:59:30.263708+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T13:59:56.571424+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T14:05:00.465301+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T14:05:50.101069+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T14:07:01.184251+00:00 (multiplication - 3):
+    DB Points: 168
+    Expected Points: 130 (Base: 130, Daily Bonus: 0)
+    Diff: 38
+    Stats: Correct: 11/12, Streak: 8
+  ⚠️ ANOMALY on 2026-06-26T14:08:53.336595+00:00 (multiplication - 4):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-26T14:11:41.765262+00:00 (bahasa_melayu - topik-1):
+    DB Points: 182
+    Expected Points: 140 (Base: 140, Daily Bonus: 0)
+    Diff: 42
+    Stats: Correct: 7/10, Streak: 3
+  ⚠️ ANOMALY on 2026-06-27T02:32:40.85428+00:00 (multiplication - 8):
+    DB Points: 778
+    Expected Points: 215 (Base: 200, Daily Bonus: 15)
+    Diff: 563
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-27T12:02:47.167044+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 375
+    Expected Points: 40 (Base: 40, Daily Bonus: 0)
+    Diff: 335
+    Stats: Correct: 4/5, Streak: 4
+  ⚠️ ANOMALY on 2026-06-27T12:03:18.297954+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 375
+    Expected Points: 40 (Base: 40, Daily Bonus: 0)
+    Diff: 335
+    Stats: Correct: 4/5, Streak: 4
+  ⚠️ ANOMALY on 2026-06-27T12:03:55.04445+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 375
+    Expected Points: 40 (Base: 40, Daily Bonus: 0)
+    Diff: 335
+    Stats: Correct: 4/5, Streak: 4
+  ⚠️ ANOMALY on 2026-06-27T12:05:50.830838+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-27T12:06:31.280111+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-27T16:37:19.684897+00:00 (multiplication - 7):
+    DB Points: 303
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 193
+    Stats: Correct: 9/12, Streak: 7
+  ⚠️ ANOMALY on 2026-06-27T16:37:47.561743+00:00 (multiplication - 2):
+    DB Points: 253
+    Expected Points: 200 (Base: 200, Daily Bonus: 0)
+    Diff: 53
+    Stats: Correct: 12/12, Streak: 12
+  ⚠️ ANOMALY on 2026-06-27T16:38:43.66312+00:00 (multiplication - 9):
+    DB Points: 465
+    Expected Points: 120 (Base: 120, Daily Bonus: 0)
+    Diff: 345
+    Stats: Correct: 10/12, Streak: 8
+  ⚠️ Total Anomalies found: 73
+Total Points in quiz_sessions: 31615
+Total Points Recalculated: 26270
+Module tables sum: Peribahasa: 50, PAFKAFA: 152
+
+==================================================
+AUDITING CHILD: PAPA
+==================================================
+DB Profile TCG State:
+  - Opened Packs Count: 14
+  - Spent Points in Profile: 2000
+TCG Pull Log Cards Count:
+  - pack-starter: 60 cards (~12 packs, cost/pack: 1000, total: 12000 pts)
+  - pack-wc: 10 cards (~2 packs, cost/pack: 4000, total: 8000 pts)
+Calculated TCG Stats:
+  - Calculated Packs Count: 14
+  - Calculated Spent Points: 20000
+  ⚠️ MISMATCH: spentPoints in DB is 2000 but calculated is 20000! Diff: 18000
+Quiz Sessions Count (quiz_sessions): 38
+Verifying Points per Session:
+  ⚠️ ANOMALY on 2026-06-23T15:08:34.557785+00:00 (legal_ops - Employment Act 1955):
+    DB Points: 39
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 9
+    Stats: Correct: 3/6, Streak: 1
+  ⚠️ ANOMALY on 2026-06-23T15:09:01.967551+00:00 (legal_ops - Employment Act 1955):
+    DB Points: 65
+    Expected Points: 50 (Base: 50, Daily Bonus: 0)
+    Diff: 15
+    Stats: Correct: 5/6, Streak: 3
+  ⚠️ ANOMALY on 2026-06-23T15:09:22.065193+00:00 (legal_ops - Employment Act 1955):
+    DB Points: 139
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 29
+    Stats: Correct: 6/6, Streak: 6
+  ⚠️ ANOMALY on 2026-06-23T15:14:35.202596+00:00 (legal_ops - Minimum Wages Order):
+    DB Points: 26
+    Expected Points: 20 (Base: 20, Daily Bonus: 0)
+    Diff: 6
+    Stats: Correct: 2/4, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:15:00.143461+00:00 (legal_ops - Minimum Wages Order):
+    DB Points: 76
+    Expected Points: 60 (Base: 60, Daily Bonus: 0)
+    Diff: 16
+    Stats: Correct: 4/4, Streak: 4
+  ⚠️ ANOMALY on 2026-06-23T15:23:37.502861+00:00 (legal_ops - Minimum Wages Order):
+    DB Points: 76
+    Expected Points: 60 (Base: 60, Daily Bonus: 0)
+    Diff: 16
+    Stats: Correct: 4/4, Streak: 4
+  ⚠️ ANOMALY on 2026-06-23T15:24:20.76399+00:00 (legal_ops - Employment Act 1955):
+    DB Points: 139
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 29
+    Stats: Correct: 6/6, Streak: 6
+  ⚠️ ANOMALY on 2026-06-23T15:27:35.567665+00:00 (integration_logic - HTTP Status Codes):
+    DB Points: 26
+    Expected Points: 20 (Base: 20, Daily Bonus: 0)
+    Diff: 6
+    Stats: Correct: 2/6, Streak: 1
+  ⚠️ ANOMALY on 2026-06-23T15:28:25.110883+00:00 (integration_logic - HTTP Status Codes):
+    DB Points: 52
+    Expected Points: 40 (Base: 40, Daily Bonus: 0)
+    Diff: 12
+    Stats: Correct: 4/6, Streak: 3
+  ⚠️ ANOMALY on 2026-06-23T15:30:05.028734+00:00 (integration_logic - HTTP Status Codes):
+    DB Points: 52
+    Expected Points: 40 (Base: 40, Daily Bonus: 0)
+    Diff: 12
+    Stats: Correct: 4/6, Streak: 3
+  ⚠️ ANOMALY on 2026-06-23T15:31:50.734196+00:00 (integration_logic - Webhook Concepts):
+    DB Points: 39
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 9
+    Stats: Correct: 3/5, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:34:55.066629+00:00 (integration_logic - Webhook Concepts):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-23T15:39:01.99148+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:39:25.556808+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:40:04.18782+00:00 (pafa_kafa - bab-2):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:44:01.781017+00:00 (multiplication - TCG Battle: Multiplication Slime):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-23T15:46:40.277239+00:00 (pafa_kafa - bab-3):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:47:50.096269+00:00 (ai_specs - RAG Architecture):
+    DB Points: 139
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 29
+    Stats: Correct: 6/6, Streak: 6
+  ⚠️ ANOMALY on 2026-06-23T15:50:47.789696+00:00 (multiplication - TCG Battle: Multiplication Slime):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-23T15:52:33.1334+00:00 (multiplication - TCG Battle: Multiplication Slime):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-23T15:52:50.96942+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:52:58.029036+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T16:02:40.502467+00:00 (legal_ops - Termination & Retrenchment):
+    DB Points: 58
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 28
+    Stats: Correct: 3/5, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T16:03:11.74941+00:00 (legal_ops - Termination & Retrenchment):
+    DB Points: 52
+    Expected Points: 40 (Base: 40, Daily Bonus: 0)
+    Diff: 12
+    Stats: Correct: 4/5, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T16:07:37.166446+00:00 (multiplication - TCG Battle: Multiplication Slime):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-23T17:07:52.091901+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-23T17:11:12.94417+00:00 (integration_logic - OAuth2 Flows):
+    DB Points: 26
+    Expected Points: 20 (Base: 20, Daily Bonus: 0)
+    Diff: 6
+    Stats: Correct: 2/5, Streak: 1
+  ⚠️ ANOMALY on 2026-06-25T00:16:43.000612+00:00 (legal_ops - Employment Act 1955):
+    DB Points: 158
+    Expected Points: 125 (Base: 110, Daily Bonus: 15)
+    Diff: 33
+    Stats: Correct: 6/6, Streak: 6
+  ⚠️ ANOMALY on 2026-06-25T00:21:07.571456+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-25T13:27:28.653887+00:00 (multiplication - TCG Battle: Multiplication Slime):
+    DB Points: 120
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 25
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-26T15:41:16.166559+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 519
+    Expected Points: 110 (Base: 95, Daily Bonus: 15)
+    Diff: 409
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-27T08:45:22.658752+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 519
+    Expected Points: 110 (Base: 95, Daily Bonus: 15)
+    Diff: 409
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-27T08:49:17.126317+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 500
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 405
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ ANOMALY on 2026-06-27T08:50:01.505914+00:00 (multiplication - TCG Battle: Grand Line Recruit):
+    DB Points: 500
+    Expected Points: 95 (Base: 95, Daily Bonus: 0)
+    Diff: 405
+    Stats: Correct: 5/5, Streak: 5
+  ⚠️ Total Anomalies found: 34
+Total Points in quiz_sessions: 4831
+Total Points Recalculated: 2460
+Module tables sum: PAFKAFA: 456
+
+==================================================
+AUDITING CHILD: DHIYA
+==================================================
+DB Profile TCG State:
+  - Opened Packs Count: 0
+  - Spent Points in Profile: 0
+TCG Pull Log Cards Count:
+Calculated TCG Stats:
+  - Calculated Packs Count: 0
+  - Calculated Spent Points: 0
+  ⚠️ MISMATCH: spentPoints in DB is undefined but calculated is 0! Diff: NaN
+Quiz Sessions Count (quiz_sessions): 88
+Verifying Points per Session:
+  ⚠️ ANOMALY on 2026-06-20T16:33:05.13473+00:00 (multiplication - 9):
+    DB Points: 185
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 15
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-21T03:46:58.874667+00:00 (sejarah - bab-2):
+    DB Points: 70
+    Expected Points: 85 (Base: 70, Daily Bonus: 15)
+    Diff: -15
+    Stats: Correct: 7/10, Streak: 4
+  ⚠️ ANOMALY on 2026-06-22T02:34:08.448932+00:00 (bahasa_melayu - topik-1):
+    DB Points: 55
+    Expected Points: 95 (Base: 80, Daily Bonus: 15)
+    Diff: -40
+    Stats: Correct: 4/10, Streak: 4
+  ⚠️ ANOMALY on 2026-06-22T03:01:48.169851+00:00 (bahasa_melayu - topik-1):
+    DB Points: 30
+    Expected Points: 60 (Base: 60, Daily Bonus: 0)
+    Diff: -30
+    Stats: Correct: 3/10, Streak: 1
+  ⚠️ ANOMALY on 2026-06-22T03:03:52.545975+00:00 (bahasa_melayu - topik-1):
+    DB Points: 70
+    Expected Points: 140 (Base: 140, Daily Bonus: 0)
+    Diff: -70
+    Stats: Correct: 7/10, Streak: 3
+  ⚠️ ANOMALY on 2026-06-22T03:07:30.336442+00:00 (bahasa_melayu - topik-1):
+    DB Points: 110
+    Expected Points: 220 (Base: 220, Daily Bonus: 0)
+    Diff: -110
+    Stats: Correct: 9/10, Streak: 7
+  ⚠️ ANOMALY on 2026-06-23T15:40:54.331383+00:00 (pafa_kafa - bab-1):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-23T15:41:50.451567+00:00 (pafa_kafa - bab-2):
+    DB Points: 26
+    Expected Points: 10 (Base: 10, Daily Bonus: 0)
+    Diff: 16
+    Stats: Correct: 1/2, Streak: 1
+  ⚠️ ANOMALY on 2026-06-23T15:41:56.869603+00:00 (pafa_kafa - bab-2):
+    DB Points: 76
+    Expected Points: 30 (Base: 30, Daily Bonus: 0)
+    Diff: 46
+    Stats: Correct: 2/2, Streak: 2
+  ⚠️ ANOMALY on 2026-06-24T10:24:43.406115+00:00 (arabic - set-2):
+    DB Points: 135
+    Expected Points: 105 (Base: 90, Daily Bonus: 15)
+    Diff: 30
+    Stats: Correct: 7/10, Streak: 6
+  ⚠️ ANOMALY on 2026-06-24T10:25:06.018518+00:00 (arabic - set-2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-24T11:35:21.980766+00:00 (multiplication - 2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 9
+  ⚠️ ANOMALY on 2026-06-25T16:40:08.5795+00:00 (multiplication - mixed):
+    DB Points: 234
+    Expected Points: 185 (Base: 170, Daily Bonus: 15)
+    Diff: 49
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-25T16:40:59.561886+00:00 (arabic - set-2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 8
+  ⚠️ ANOMALY on 2026-06-25T16:41:22.569729+00:00 (arabic - set-2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 8
+  ⚠️ ANOMALY on 2026-06-25T16:41:44.91289+00:00 (arabic - set-2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 6
+  ⚠️ ANOMALY on 2026-06-25T16:42:09.112796+00:00 (arabic - set-2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 9
+  ⚠️ ANOMALY on 2026-06-25T16:42:28.684317+00:00 (arabic - set-2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-25T16:43:06.108773+00:00 (arabic - set-2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-25T16:43:39.746141+00:00 (arabic - set-2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-25T16:43:59.562936+00:00 (arabic - set-2):
+    DB Points: 215
+    Expected Points: 170 (Base: 170, Daily Bonus: 0)
+    Diff: 45
+    Stats: Correct: 10/10, Streak: 10
+  ⚠️ ANOMALY on 2026-06-25T16:44:20.30392+00:00 (arabic - set-2):
+    DB Points: 142
+    Expected Points: 110 (Base: 110, Daily Bonus: 0)
+    Diff: 32
+    Stats: Correct: 9/10, Streak: 8
+  ⚠️ ANOMALY on 2026-06-27T07:14:52.434445+00:00 (sejarah - bab-1):
+    DB Points: 110
+    Expected Points: 85 (Base: 70, Daily Bonus: 15)
+    Diff: 25
+    Stats: Correct: 7/10, Streak: 4
+  ⚠️ ANOMALY on 2026-06-27T07:17:04.531085+00:00 (sejarah - bab-1):
+    DB Points: 78
+    Expected Points: 60 (Base: 60, Daily Bonus: 0)
+    Diff: 18
+    Stats: Correct: 6/10, Streak: 3
+  ⚠️ ANOMALY on 2026-06-27T10:25:41.216668+00:00 (sejarah - bab-1):
+    DB Points: 285
+    Expected Points: 220 (Base: 220, Daily Bonus: 0)
+    Diff: 65
+    Stats: Correct: 20/25, Streak: 8
+  ⚠️ ANOMALY on 2026-06-27T15:30:18.579479+00:00 (sejarah - bab-4):
+    DB Points: 78
+    Expected Points: 60 (Base: 60, Daily Bonus: 0)
+    Diff: 18
+    Stats: Correct: 6/10, Streak: 3
+  ⚠️ ANOMALY on 2026-06-27T15:31:35.920304+00:00 (sejarah - bab-4):
+    DB Points: 91
+    Expected Points: 70 (Base: 70, Daily Bonus: 0)
+    Diff: 21
+    Stats: Correct: 7/10, Streak: 4
+  ⚠️ ANOMALY on 2026-06-27T16:14:08.631029+00:00 (bahasa_melayu - topik-3):
+    DB Points: 303
+    Expected Points: 220 (Base: 220, Daily Bonus: 0)
+    Diff: 83
+    Stats: Correct: 9/10, Streak: 9
+  ⚠️ ANOMALY on 2026-06-27T16:18:53.854251+00:00 (bahasa_melayu - topik-3):
+    DB Points: 284
+    Expected Points: 220 (Base: 220, Daily Bonus: 0)
+    Diff: 64
+    Stats: Correct: 9/10, Streak: 6
+  ⚠️ Total Anomalies found: 29
+Total Points in quiz_sessions: 12033
+Total Points Recalculated: 11385
+Module tables sum: Sejarah: 3277, Peribahasa: 310, BM: 2980, PAFKAFA: 178. Total: 6745
