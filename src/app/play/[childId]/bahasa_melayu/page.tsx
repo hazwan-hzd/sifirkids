@@ -387,7 +387,7 @@ export default function BahasaMelayuPage({
               </span>
             ))}
           </div>
-          <h2 className="font-display text-xl font-bold text-ink leading-relaxed">
+          <h2 className="font-display text-xl font-bold text-ink leading-relaxed whitespace-pre-line">
             {q.question_text}
           </h2>
         </Card>

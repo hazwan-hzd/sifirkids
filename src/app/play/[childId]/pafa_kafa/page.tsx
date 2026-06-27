@@ -112,6 +112,7 @@ export default function PafaKafaPage({
   const [termInput, setTermInput] = useState("");
   const [usedHint, setUsedHint] = useState(false);
   const [showHintConfirm, setShowHintConfirm] = useState(false);
+  const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
   const questionStartRef = useRef<number>(Date.now());
   const quizStartRef = useRef<number>(Date.now());
 
@@ -151,6 +152,16 @@ export default function PafaKafaPage({
     return max;
   };
 
+  /** Fisher-Yates shuffle (returns new array). */
+  const shuffleArray = <T,>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
   // Start quiz for a chapter
   const startQuiz = useCallback(async (chapterNum: number) => {
     const qs = await fetchQuestions(level, chapterNum, quizMode, id);
@@ -167,6 +178,13 @@ export default function PafaKafaPage({
     setShowHintConfirm(false);
     questionStartRef.current = Date.now();
     quizStartRef.current = Date.now();
+    // Shuffle options for first question
+    const firstQ = qs[0];
+    if (firstQ && firstQ.options && firstQ.options.length > 0 && firstQ.question_type !== "true_false") {
+      setShuffledOptions(shuffleArray(firstQ.options));
+    } else {
+      setShuffledOptions([]);
+    }
     setScreen("quiz");
   }, [quizMode, id, level]);
 
@@ -227,6 +245,13 @@ export default function PafaKafaPage({
       setUsedHint(false);
       setShowHintConfirm(false);
       questionStartRef.current = Date.now();
+      // Shuffle options for next question
+      const nextQ = questions[currentIdx + 1];
+      if (nextQ && nextQ.options && nextQ.options.length > 0 && nextQ.question_type !== "true_false") {
+        setShuffledOptions(shuffleArray(nextQ.options));
+      } else {
+        setShuffledOptions([]);
+      }
     } else {
       // Quiz complete - calculate and save
       const correctCount = answers.filter((a) => a.is_correct).length;
@@ -418,7 +443,7 @@ export default function PafaKafaPage({
               </span>
             ))}
           </div>
-          <h2 className="font-display text-xl font-bold text-ink leading-relaxed">
+          <h2 className="font-display text-xl font-bold text-ink leading-relaxed whitespace-pre-line">
             {q.question_text}
           </h2>
         </Card>
@@ -428,11 +453,11 @@ export default function PafaKafaPage({
           {/* MCQ / True-False Mode */}
           {q.question_type !== "fill_blank" && (() => {
             // For true_false with null options, provide fallback Benar/Salah
-            const displayOptions = q.options && q.options.length > 0
-              ? q.options
-              : q.question_type === "true_false"
+            const displayOptions = q.question_type === "true_false"
               ? ["Benar", "Salah"]
-              : [];
+              : shuffledOptions.length > 0
+              ? shuffledOptions
+              : (q.options ?? []);
             // Map display text to the DB correct_answer value for comparison
             // DB stores "true"/"false" for true_false, but display shows "Benar"/"Salah"
             const normalizeAnswer = (val: string) => {
