@@ -157,7 +157,7 @@ export default function TcgShopPage({
               >
                 {/* Sold Out Overlay */}
                 {isSoldOut && (
-                  <div className="absolute inset-0 bg-slate-900/20 z-20 flex items-center justify-center rounded-3xl">
+                  <div className="absolute inset-0 bg-slate-900/20 z-20 pointer-events-none flex items-center justify-center rounded-3xl">
                     <span className="bg-red-600 text-white font-display font-black text-lg px-6 py-2 rounded-full -rotate-12 shadow-xl border-2 border-white">
                       SOLD OUT
                     </span>

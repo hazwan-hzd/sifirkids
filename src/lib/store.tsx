@@ -218,7 +218,8 @@ function reconcileChildPoints(c: ChildData): ChildData {
     .filter((cl) => cl.status === "approved" || cl.status === "pending")
     .reduce((sum, cl) => sum + cl.cost, 0);
   const spentPoints = c.tcg?.spentPoints ?? 0;
-  const points = Math.max(0, totalEarned - claimsCost - spentPoints);
+  const ledgerOffset = c.tcg?.ledgerOffset ?? 0;
+  const points = Math.max(0, totalEarned - claimsCost - spentPoints + ledgerOffset);
 
   // Remove cards with no artwork from collection
   let tcg = c.tcg
@@ -563,31 +564,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
   }, [hydrated]);
 
-  // Points Ledger sync: fetch authoritative balances from Supabase
-  const ledgerSyncDone = useRef(false);
-  useEffect(() => {
-    if (!hydrated || ledgerSyncDone.current) return;
-    ledgerSyncDone.current = true;
-
-    fetchAllLedgerBalances().then((balances) => {
-      if (Object.keys(balances).length === 0) return; // offline or error
-      setState((prev) => {
-        const next = { ...prev, children: { ...prev.children } };
-        for (const [childId, balance] of Object.entries(balances)) {
-          if (next.children[childId as ChildId]) {
-            next.children[childId as ChildId] = {
-              ...next.children[childId as ChildId],
-              rewards: {
-                ...next.children[childId as ChildId].rewards,
-                points: balance,
-              },
-            };
-          }
-        }
-        return next;
-      });
-    });
-  }, [hydrated]);
 
   // persist on change (after hydration)
   useEffect(() => {

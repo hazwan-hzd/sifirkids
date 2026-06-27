@@ -141,6 +141,7 @@ export interface ChildTCG {
   activeDeck: string[]; // list of card IDs (max 5)
   openedPacksCount: number;
   spentPoints?: number;
+  ledgerOffset?: number;
 }
 
 export interface TradeRequest {

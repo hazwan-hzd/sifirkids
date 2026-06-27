@@ -42,7 +42,7 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     description: "Multiply 2 to 12",
     status: "active",
     parentOnly: false,
-    children: "all",
+    children: ["hafeeza", "dhiya", "ilyas"],
     animationDelay: 0,
   },
   {
@@ -53,7 +53,7 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     description: "Learn Arabic letters",
     status: "active",
     parentOnly: false,
-    children: "all",
+    children: ["hafeeza", "dhiya", "ilyas"],
     animationDelay: 80,
   },
   {
@@ -86,7 +86,7 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     description: "Tingkatan 1, 2 & 3 — Simpulan Bahasa & Peribahasa",
     status: "active",
     parentOnly: false,
-    children: "all",
+    children: ["hafeeza", "dhiya", "ilyas"],
     animationDelay: 240,
   },
   {
@@ -108,7 +108,7 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     description: "Kuiz BM KSSR/KSSM - mengikut tahap umur",
     status: "active",
     parentOnly: false,
-    children: "all",
+    children: ["hafeeza", "dhiya", "ilyas"],
     animationDelay: 400,
   },
   {
