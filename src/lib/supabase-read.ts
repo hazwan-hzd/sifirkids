@@ -202,8 +202,8 @@ export function useSupabaseData() {
     setError(null);
 
     try {
-      // Fetch sessions, Arabic answers, Sejarah, Peribahasa and BM results in parallel
-      const [sessionsRes, arabicAnswersRes, sejarahRes, peribahasaRes, bmRes] = await Promise.all([
+      // Fetch sessions, Arabic answers, Sejarah, Peribahasa, BM and Geografi results in parallel
+      const [sessionsRes, arabicAnswersRes, sejarahRes, peribahasaRes, bmRes, geografiRes] = await Promise.all([
         supabase
           .from("quiz_sessions")
           .select("*")
@@ -225,12 +225,17 @@ export function useSupabaseData() {
           .from("bm_quiz_results")
           .select("*")
           .order("created_at", { ascending: true }),
+        supabase
+          .from("geografi_quiz_results")
+          .select("*")
+          .order("created_at", { ascending: true }),
       ]);
 
       if (sessionsRes.error) throw sessionsRes.error;
       if (sejarahRes.error) throw sejarahRes.error;
       if (peribahasaRes.error) throw peribahasaRes.error;
       if (bmRes.error) throw bmRes.error;
+      if (geografiRes.error) throw geografiRes.error;
 
       const rows = sessionsRes.data ?? [];
       const arabicAnswerRows = arabicAnswersRes.data ?? [];
@@ -280,8 +285,23 @@ export function useSupabaseData() {
         created_at: r.created_at,
       }));
 
+      // Map Geografi results to the generic quiz session shape
+      const geografiRows = (geografiRes.data ?? []).map((r) => ({
+        id: r.id,
+        child_id: r.child_id,
+        module: "geografi",
+        topic: `bab-${r.chapter}`,
+        quiz_mode: null,
+        total_questions: r.total_questions,
+        correct_answers: r.correct_answers,
+        duration_sec: r.duration_sec ?? 0,
+        best_streak: 0, // not tracked in DB
+        points_earned: r.points_earned ?? 0,
+        created_at: r.created_at,
+      }));
+
       // Combine all rows
-      const combinedRows = [...rows, ...sejarahRows, ...peribahasaRows, ...bmRows];
+      const combinedRows = [...rows, ...sejarahRows, ...peribahasaRows, ...bmRows, ...geografiRows];
 
       // Group sessions by child_id
       const grouped: Record<string, typeof combinedRows> = {};

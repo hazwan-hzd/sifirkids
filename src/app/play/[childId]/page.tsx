@@ -172,6 +172,24 @@ export default function ChildHubPage({
           </Link>
         )}
 
+        {/* Geografi module — Dhiya only */}
+        {id === "dhiya" && (
+          <Link
+            href={`/play/${id}/geografi`}
+            role="button"
+            className="btn-pop tap animate-rise flex flex-col gap-3 rounded-[var(--radius-blob)] bg-sky-100 p-6"
+            style={{ animationDelay: "170ms" }}
+          >
+            <span className="text-6xl">🌍</span>
+            <span className="font-display text-2xl font-bold text-sky-600">
+              Geografi Tingkatan 4
+            </span>
+            <span className="text-sm text-ink/70">
+              Kuiz KSSM — Kemahiran, Fizikal & Manusia
+            </span>
+          </Link>
+        )}
+
         {/* Peribahasa module — all children */}
         <Link
           href={`/play/${id}/peribahasa`}

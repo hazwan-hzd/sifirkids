@@ -68,6 +68,17 @@ export const MODULE_REGISTRY: ModuleConfig[] = [
     animationDelay: 160,
   },
   {
+    id: "geografi",
+    label: "Geografi Tingkatan 4",
+    emoji: "🌍",
+    accent: "sky",
+    description: "Kuiz KSSM — Kemahiran, Fizikal & Manusia",
+    status: "active",
+    parentOnly: false,
+    children: ["dhiya"],
+    animationDelay: 170,
+  },
+  {
     id: "peribahasa",
     label: "Peribahasa",
     emoji: "📖",
