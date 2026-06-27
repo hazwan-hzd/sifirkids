@@ -1282,6 +1282,7 @@ export interface PackConfig {
     ultra_rare: number;
     secret_gold: number;
   };
+  imageUrl?: string;
 }
 
 export const PACKS: PackConfig[] = [
@@ -1293,6 +1294,7 @@ export const PACKS: PackConfig[] = [
     cardCount: 5,
     description: "Contains basic Pokémon/One Piece hybrid cards to start your binder.",
     allowedSets: ["starter"],
+    imageUrl: "/packs/starter_pack_foil.png",
     rarityWeights: {
       common: 71,
       uncommon: 20,

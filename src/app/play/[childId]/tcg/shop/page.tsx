@@ -190,12 +190,21 @@ export default function TcgShopPage({
 
                 {/* Visual Pack Wrapper Graphic */}
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-20 bg-gradient-to-br from-indigo-500 via-sky-400 to-indigo-600 rounded-xl flex items-center justify-center border border-sky-300 shadow-md relative overflow-hidden">
-                    <span className="text-4xl z-10">{pack.icon}</span>
-                    <div className="absolute top-0 right-0 w-4 h-4 bg-yellow-400 rounded-bl-lg border-l border-b border-indigo-200 flex items-center justify-center font-black text-[8px] text-indigo-950">
-                      5
+                  {pack.imageUrl ? (
+                    <div className="w-16 h-20 relative flex-shrink-0 drop-shadow-md">
+                      <img src={pack.imageUrl} alt={pack.name} className="w-full h-full object-contain" />
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full border border-indigo-200 flex items-center justify-center font-black text-[9px] text-indigo-950 shadow-sm z-20">
+                        {pack.cardCount}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="w-16 h-20 flex-shrink-0 bg-gradient-to-br from-indigo-500 via-sky-400 to-indigo-600 rounded-xl flex items-center justify-center border border-sky-300 shadow-md relative overflow-hidden">
+                      <span className="text-4xl z-10">{pack.icon}</span>
+                      <div className="absolute top-0 right-0 w-4 h-4 bg-yellow-400 rounded-bl-lg border-l border-b border-indigo-200 flex items-center justify-center font-black text-[8px] text-indigo-950 z-20">
+                        {pack.cardCount}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex flex-col text-left">
                     <h2 className="font-display text-lg font-bold text-slate-800 leading-tight">
                       {pack.name}

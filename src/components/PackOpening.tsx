@@ -144,32 +144,38 @@ export function PackOpening({ pack, cards, childId, onClose }: Props) {
           <button
             onClick={handleTear}
             aria-label="Tear open the pack"
-            className="group relative h-96 w-64 overflow-hidden rounded-2xl border-4 border-amber-400 bg-gradient-to-br from-indigo-600 via-sky-500 to-indigo-800 p-6 shadow-2xl transition-transform duration-300 hover:scale-105 active:scale-95"
+            className="group relative h-96 w-64 overflow-hidden rounded-2xl border-4 border-amber-400 bg-gradient-to-br from-indigo-600 via-sky-500 to-indigo-800 shadow-2xl transition-transform duration-300 hover:scale-105 active:scale-95"
           >
-            <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0%,transparent_70%)]" />
-            <div className="absolute -left-12 -top-12 h-24 w-24 animate-[pulse_2s_infinite] rounded-full bg-sky-400/20 blur-xl" />
-            <div className="absolute -bottom-12 -right-12 h-24 w-24 animate-[pulse_4s_infinite] rounded-full bg-pink-500/10 blur-xl" />
-            <div className="flex h-full flex-col items-center justify-between">
-              <span className="rounded border border-amber-400/40 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-300">
-                ★ BOOSTER ★
-              </span>
-              <div className="flex flex-col items-center">
-                <span className="select-none text-8xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] transition-transform group-hover:scale-110">
-                  {pack.icon}
-                </span>
-                <span className="mt-4 select-none text-[10px] font-bold text-sky-200">
-                  TAP TO TEAR OPEN
-                </span>
+            {pack.imageUrl ? (
+              <img src={pack.imageUrl} alt={pack.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+            ) : (
+              <div className="p-6 h-full relative">
+                <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0%,transparent_70%)]" />
+                <div className="absolute -left-12 -top-12 h-24 w-24 animate-[pulse_2s_infinite] rounded-full bg-sky-400/20 blur-xl" />
+                <div className="absolute -bottom-12 -right-12 h-24 w-24 animate-[pulse_4s_infinite] rounded-full bg-pink-500/10 blur-xl" />
+                <div className="relative z-10 flex h-full flex-col items-center justify-between">
+                  <span className="rounded border border-amber-400/40 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-300">
+                    ★ BOOSTER ★
+                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className="select-none text-8xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] transition-transform group-hover:scale-110">
+                      {pack.icon}
+                    </span>
+                    <span className="mt-4 select-none text-[10px] font-bold text-sky-200">
+                      TAP TO TEAR OPEN
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="font-display text-lg font-extrabold text-white">
+                      SIFIRDEX
+                    </span>
+                    <span className="text-[8px] tracking-wider text-sky-300">
+                      {cards.length} TRADING CARDS INSIDE
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="font-display text-lg font-extrabold text-white">
-                  SIFIRDEX
-                </span>
-                <span className="text-[8px] tracking-wider text-sky-300">
-                  {cards.length} TRADING CARDS INSIDE
-                </span>
-              </div>
-            </div>
+            )}
           </button>
 
           <button
