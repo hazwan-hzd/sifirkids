@@ -136,8 +136,14 @@ export default function TcgShopPage({
 
             if (runsWithPack.length === 0) return null;
 
-            // Selected run for this pack (default to newest available)
-            const selectedRunId = selectedRuns[pack.id] || runsWithPack[runsWithPack.length - 1]?.id;
+            // Selected run for this pack (default to newest with supply, fallback to newest overall)
+            const defaultRunId = [...runsWithPack].reverse().find((run) => {
+              const runSupply = supplyByRun[run.id] || [];
+              const s = runSupply.find((rs) => rs.pack_type === pack.id);
+              return s && s.remaining > 0;
+            })?.id || runsWithPack[runsWithPack.length - 1]?.id;
+
+            const selectedRunId = selectedRuns[pack.id] || defaultRunId;
             const selectedRunSupply = (supplyByRun[selectedRunId] || []).find((s) => s.pack_type === pack.id);
             const canAfford = child.rewards.points >= pack.cost;
             const isSoldOut = selectedRunSupply ? selectedRunSupply.remaining <= 0 : false;
@@ -205,7 +211,7 @@ export default function TcgShopPage({
                 </p>
 
                 {/* SK Edition Selector */}
-                <div className="mb-4">
+                <div className="mb-4 relative z-30">
                   <span className="font-display text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
                     Edition
                   </span>

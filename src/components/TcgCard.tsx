@@ -278,7 +278,21 @@ export function TcgCard({
             <span className="text-4xl animate-bounce">🃏</span>
           </div>
           <div className="text-center">
-            <div className="text-xs font-semibold text-amber-400">CREW & MONSTERS</div>
+            <div className="text-xs font-semibold text-amber-400">
+              {({
+                starter: "STARTER EDITION",
+                monsters: "MONSTER EVOLUTION",
+                crews: "PIRATE CREWS",
+                promo: "PROMO EDITION",
+                mha: "HERO EDITION",
+                squishy: "SQUISHY SQUAD",
+                wc: "WORLD CUP",
+                jjk: "JUJUTSU KAISEN",
+                op: "ONE PIECE",
+                rf: "RETRO FOOTBALL",
+                smg: "SUPER MARIO",
+              } as Record<string, string>)[card.set] || "SIFIRDEX TCG"}
+            </div>
             <div className="text-[9px] text-sky-400/80">Trading Card Game</div>
           </div>
         </div>
