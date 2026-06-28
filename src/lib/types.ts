@@ -120,7 +120,7 @@ export interface Card {
   id: string;
   name: string;
   emoji: string;
-  type: "fire" | "water" | "grass" | "lightning" | "strawhat" | "marine" | "shadow" | "legendary" | "hero" | "squishy" | "attacker" | "midfielder" | "defender" | "goalkeeper" | "legend" | "sorcerer" | "curse" | "domain" | "special_grade" | "network" | "star" | "powerup" | "boss" | "cosmic";
+  type: "fire" | "water" | "grass" | "lightning" | "strawhat" | "marine" | "shadow" | "legendary" | "hero" | "squishy" | "attacker" | "midfielder" | "defender" | "goalkeeper" | "legend" | "sorcerer" | "curse" | "domain" | "special_grade" | "network" | "star" | "powerup" | "boss" | "cosmic" | "warlord" | "emperor" | "revolutionary" | "support" | "villain";
   rarity: "common" | "uncommon" | "rare" | "ultra_rare" | "secret_gold";
   hp: number;
   attackName: string;

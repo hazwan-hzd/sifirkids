@@ -60,6 +60,27 @@ const TYPE_STYLES: Record<
     badge: "bg-blue-800 text-white",
     icon: "⚓",
   },
+  warlord: {
+    bg: "from-rose-500 via-pink-600 to-purple-800",
+    border: "border-rose-600",
+    text: "text-rose-100",
+    badge: "bg-rose-700 text-rose-100",
+    icon: "☠️",
+  },
+  emperor: {
+    bg: "from-purple-900 via-red-800 to-amber-700",
+    border: "border-purple-800",
+    text: "text-amber-100",
+    badge: "bg-purple-950 text-amber-100",
+    icon: "😈",
+  },
+  revolutionary: {
+    bg: "from-red-600 via-orange-600 to-slate-800",
+    border: "border-red-700",
+    text: "text-red-50",
+    badge: "bg-red-800 text-white",
+    icon: "🚩",
+  },
   shadow: {
     bg: "from-purple-900 via-slate-900 to-violet-950",
     border: "border-purple-800",
@@ -87,6 +108,20 @@ const TYPE_STYLES: Record<
     text: "text-pink-50",
     badge: "bg-pink-500 text-white",
     icon: "🧸",
+  },
+  support: {
+    bg: "from-indigo-400 via-sky-400 to-teal-500",
+    border: "border-sky-500",
+    text: "text-slate-950",
+    badge: "bg-sky-700 text-sky-100",
+    icon: "🔧",
+  },
+  villain: {
+    bg: "from-slate-800 via-purple-900 to-zinc-950",
+    border: "border-purple-900",
+    text: "text-purple-100",
+    badge: "bg-purple-950 text-purple-200",
+    icon: "🦹",
   },
   attacker: {
     bg: "from-emerald-500 via-sky-500 to-lime-400",
