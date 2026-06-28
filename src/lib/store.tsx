@@ -537,6 +537,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   spentPoints: Math.max(cloudTcg?.spentPoints ?? 0, localTcg?.spentPoints ?? 0),
                   openedPacksCount: Math.max(cloudTcg?.openedPacksCount ?? 0, localTcg?.openedPacksCount ?? 0),
                   collection: { ...(localTcg?.collection ?? {}), ...(cloudTcg?.collection ?? {}) },
+                  ledgerOffset: cloudTcg?.ledgerOffset ?? localTcg?.ledgerOffset ?? 0,
                 };
 
                 // Merge claims by ID (union of local + cloud)
