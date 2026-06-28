@@ -517,52 +517,73 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
-    // Fetch Child Profiles (Avatar + TCG collection + Claims)
-    supabase
-      .from("child_profiles")
-      .select("id, avatar, tcg, claims")
-      .then(({ data }) => {
-        if (data) {
-          setState((prev) => {
-            const next = { ...prev, children: { ...prev.children } };
-            for (const row of data) {
-              const cid = row.id as ChildId;
-              if (next.children[cid]) {
-                const localTcg = next.children[cid].tcg;
-                const cloudTcg = row.tcg as typeof localTcg | null;
+    // Fetch Child Profiles (Avatar + TCG collection + Claims) + Points Ledger Balances
+    Promise.all([
+      supabase.from("child_profiles").select("id, avatar, tcg, claims"),
+      fetchAllLedgerBalances(),
+    ]).then(([profilesRes, ledgerBalances]) => {
+      const data = profilesRes.data;
+      if (data) {
+        setState((prev) => {
+          const next = { ...prev, children: { ...prev.children } };
+          for (const row of data) {
+            const cid = row.id as ChildId;
+            if (next.children[cid]) {
+              const localTcg = next.children[cid].tcg;
+              const cloudTcg = row.tcg as typeof localTcg | null;
 
-                // Merge TCG: take MAX spentPoints, union collections
-                const mergedTcg = {
-                  ...(localTcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0, spentPoints: 0 }),
-                  spentPoints: Math.max(cloudTcg?.spentPoints ?? 0, localTcg?.spentPoints ?? 0),
-                  openedPacksCount: Math.max(cloudTcg?.openedPacksCount ?? 0, localTcg?.openedPacksCount ?? 0),
-                  collection: { ...(localTcg?.collection ?? {}), ...(cloudTcg?.collection ?? {}) },
-                  ledgerOffset: cloudTcg?.ledgerOffset ?? localTcg?.ledgerOffset ?? 0,
-                };
+              // Compute total earned locally from sessions
+              const totalEarned = next.children[cid].sessions.reduce(
+                (sum, s) => sum + (s.pointsEarned ?? 0),
+                0,
+              );
+              // Compute claims cost
+              const claimsCost = (row.claims as any[] ?? next.children[cid].rewards.claims ?? [])
+                .filter((cl) => cl.status === "approved" || cl.status === "pending")
+                .reduce((sum, cl) => sum + cl.cost, 0);
+              // spentPoints
+              const spentPoints = Math.max(cloudTcg?.spentPoints ?? 0, localTcg?.spentPoints ?? 0);
 
-                // Merge claims by ID (union of local + cloud)
-                const localClaims = next.children[cid].rewards.claims ?? [];
-                const cloudClaims = (row.claims as typeof localClaims) ?? [];
-                const claimMap = new Map<string, (typeof localClaims)[0]>();
-                for (const cl of localClaims) claimMap.set(cl.id, cl);
-                for (const cl of cloudClaims) claimMap.set(cl.id, cl); // cloud wins on conflict
-                const mergedClaims = Array.from(claimMap.values());
+              const localPointsWithoutOffset = totalEarned - claimsCost - spentPoints;
 
-                next.children[cid] = reconcileChildPoints({
-                  ...next.children[cid],
-                  avatar: row.avatar ?? next.children[cid].avatar,
-                  tcg: mergedTcg,
-                  rewards: {
-                    ...next.children[cid].rewards,
-                    claims: mergedClaims,
-                  },
-                });
-              }
+              // Calculate expected offset to align points with cloud points_ledger sum
+              const hasLedgerBalance = cid in ledgerBalances;
+              const calculatedOffset = hasLedgerBalance
+                ? ledgerBalances[cid] - localPointsWithoutOffset
+                : (cloudTcg?.ledgerOffset ?? localTcg?.ledgerOffset ?? 0);
+
+              // Merge TCG: take MAX spentPoints, union collections, auto-adjust ledgerOffset
+              const mergedTcg = {
+                ...(localTcg ?? { collection: {}, activeBuddyId: null, activeDeck: [], openedPacksCount: 0, spentPoints: 0 }),
+                spentPoints,
+                openedPacksCount: Math.max(cloudTcg?.openedPacksCount ?? 0, localTcg?.openedPacksCount ?? 0),
+                collection: { ...(localTcg?.collection ?? {}), ...(cloudTcg?.collection ?? {}) },
+                ledgerOffset: calculatedOffset,
+              };
+
+              // Merge claims by ID (union of local + cloud)
+              const localClaims = next.children[cid].rewards.claims ?? [];
+              const cloudClaims = (row.claims as typeof localClaims) ?? [];
+              const claimMap = new Map<string, (typeof localClaims)[0]>();
+              for (const cl of localClaims) claimMap.set(cl.id, cl);
+              for (const cl of cloudClaims) claimMap.set(cl.id, cl); // cloud wins on conflict
+              const mergedClaims = Array.from(claimMap.values());
+
+              next.children[cid] = reconcileChildPoints({
+                ...next.children[cid],
+                avatar: row.avatar ?? next.children[cid].avatar,
+                tcg: mergedTcg,
+                rewards: {
+                  ...next.children[cid].rewards,
+                  claims: mergedClaims,
+                },
+              });
             }
-            return next;
-          });
-        }
-      });
+          }
+          return next;
+        });
+      }
+    });
   }, [hydrated]);
 
 
