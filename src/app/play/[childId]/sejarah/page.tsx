@@ -444,7 +444,7 @@ export default function SejarahPage({
             q.options?.map((opt, i) => {
               const letter = String.fromCharCode(65 + i); // A, B, C, D
               const isSelected = selectedAnswer === opt;
-              const isCorrectOpt = opt === q.correct_answer;
+              const isCorrectOpt = opt === q.correct_answer || (q.correct_answer.length === 1 && opt.startsWith(q.correct_answer + ")"));
               const showResult = alreadyAnswered;
 
               return (
@@ -486,9 +486,9 @@ export default function SejarahPage({
             <div className="grid grid-cols-2 gap-3">
               {["Benar", "Salah"].map((opt) => {
                 const isSelected = selectedAnswer === opt;
-                // Safely compare in case DB has "true"/"false" instead of "Benar"/"Salah"
-                const dbCorrect = q.correct_answer?.toLowerCase() === "true" ? "Benar" : 
-                                 (q.correct_answer?.toLowerCase() === "false" ? "Salah" : q.correct_answer);
+                // Safely compare in case DB has "true"/"false" or "betul"/"salah" instead of "Benar"/"Salah"
+                const dbCorrect = ["true", "betul", "benar"].includes(q.correct_answer?.toLowerCase() || "") ? "Benar" : 
+                                 (["false", "salah"].includes(q.correct_answer?.toLowerCase() || "") ? "Salah" : q.correct_answer);
                 const isCorrectOpt = opt === dbCorrect;
                 const showResult = alreadyAnswered;
 
