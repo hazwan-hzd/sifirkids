@@ -777,7 +777,7 @@ export const PEMAHAMAN_PASSAGES: PemahamanPassage[] = [
       },
       {
         id: "p8_q5",
-        question_text: "Nyatakan three perkataan perasaan dalam petikan.",
+        question_text: "Nyatakan tiga perkataan perasaan dalam petikan.",
         correct_answer: "Tiga perkataan perasaan ialah sedih, gelisah, dan gembira.",
         explanation: "Pilih mana-mana tiga: sedih, gelisah, gembira, kasih sayang.",
         difficulty: "kbat",

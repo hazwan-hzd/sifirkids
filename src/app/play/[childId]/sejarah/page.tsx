@@ -141,8 +141,18 @@ export default function SejarahPage({
   const submitAnswer = useCallback(() => {
     if (!selectedAnswer || showExplanation) return;
     const q = questions[currentIdx];
-    const isCorrect =
-      selectedAnswer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
+    const isCorrect = (() => {
+      const given = selectedAnswer.trim().toLowerCase();
+      const correct = q.correct_answer.trim().toLowerCase();
+      // Exact match (works after DB migration to full text)
+      if (given === correct) return true;
+      // MCQ letter fallback: correct_answer is a single letter like "C", selected is "C) ..."
+      if (correct.length === 1 && given.startsWith(correct + ")")) return true;
+      // T/F normalization: betul ↔ benar, salah stays salah
+      const normGiven = given === "benar" ? "betul" : given;
+      const normCorrect = correct === "benar" ? "betul" : correct;
+      return normGiven === normCorrect;
+    })();
     const responseTimeMs = Date.now() - questionStartRef.current;
 
     setAnswers((prev) => [
